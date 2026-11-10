@@ -1,0 +1,102 @@
+rules_version = '2';
+// 교통대 패스 게시판 보안 규칙
+// - 누구나 읽기, 익명 로그인한 사람만 쓰기
+// - 글은 30초, 댓글은 10초에 한 번 (도배 방지)
+// - 내 글·댓글만 지우기, 운영자(admins 컬렉션)는 모두 지우기
+// - 공감·신고는 한 사람당 한 번
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function isAdmin() { return signedIn() && exists(/databases/$(database)/documents/admins/$(me())); }
+    function userDoc() { return /databases/$(database)/documents/users/$(me()); }
+    function okText(s, max) { return s is string && s.size() > 0 && s.size() <= max; }
+    function okAuthor(d) {
+      return d.nick is string && d.nick.size() > 0 && d.nick.size() <= 20
+        && d.badges is list && d.badges.size() <= 3
+        && d.uid == me() && d.createdAt == request.time;
+    }
+    function cooled(field, secs) {
+      return !exists(userDoc())
+        || !(field in get(userDoc()).data)
+        || request.time > get(userDoc()).data[field] + duration.value(secs, 's');
+    }
+    function stamped(field) { return getAfter(userDoc()).data[field] == request.time; }
+    function keepOrNow(field) {
+      return !(field in request.resource.data)
+        || request.resource.data[field] == request.time
+        || (resource != null && field in resource.data && request.resource.data[field] == resource.data[field]);
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && me() == uid;
+      allow create, update: if signedIn() && me() == uid
+        && request.resource.data.keys().hasOnly(['lastPostAt', 'lastCommentAt'])
+        && keepOrNow('lastPostAt') && keepOrNow('lastCommentAt');
+    }
+
+    match /posts/{pid} {
+      function likePath() { return /databases/$(database)/documents/posts/$(pid)/likes/$(me()); }
+      function reportPath() { return /databases/$(database)/documents/posts/$(pid)/reports/$(me()); }
+      function same(f) { return request.resource.data[f] == resource.data[f]; }
+      function likeUp() {
+        return request.resource.data.likeCount == resource.data.likeCount + 1
+          && same('commentCount') && same('reportCount')
+          && !exists(likePath()) && existsAfter(likePath());
+      }
+      function likeDown() {
+        return request.resource.data.likeCount == resource.data.likeCount - 1
+          && same('commentCount') && same('reportCount')
+          && exists(likePath()) && !existsAfter(likePath());
+      }
+      function reportUp() {
+        return request.resource.data.reportCount == resource.data.reportCount + 1
+          && same('likeCount') && same('commentCount')
+          && !exists(reportPath()) && existsAfter(reportPath());
+      }
+      function commentStep() {
+        return same('likeCount') && same('reportCount') && (
+          (request.resource.data.commentCount == resource.data.commentCount + 1 && stamped('lastCommentAt'))
+          || request.resource.data.commentCount == resource.data.commentCount - 1
+        );
+      }
+
+      allow read: if true;
+      allow create: if signedIn() && cooled('lastPostAt', 30) && stamped('lastPostAt')
+        && request.resource.data.keys().hasOnly(['cat', 'title', 'body', 'nick', 'badges', 'uid', 'createdAt', 'likeCount', 'commentCount', 'reportCount'])
+        && request.resource.data.cat in ['자유', '질문', '정보', '분실물']
+        && okText(request.resource.data.title, 60)
+        && okText(request.resource.data.body, 2000)
+        && okAuthor(request.resource.data)
+        && request.resource.data.likeCount == 0
+        && request.resource.data.commentCount == 0
+        && request.resource.data.reportCount == 0;
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount', 'commentCount', 'reportCount'])
+        && (likeUp() || likeDown() || reportUp() || commentStep());
+      allow delete: if signedIn() && (resource.data.uid == me() || isAdmin());
+
+      match /comments/{cid} {
+        allow read: if true;
+        allow create: if signedIn() && cooled('lastCommentAt', 10) && stamped('lastCommentAt')
+          && request.resource.data.keys().hasOnly(['body', 'nick', 'badges', 'uid', 'createdAt'])
+          && okText(request.resource.data.body, 500)
+          && okAuthor(request.resource.data);
+        allow delete: if signedIn() && (resource.data.uid == me() || isAdmin());
+      }
+      match /likes/{uid} {
+        allow read: if signedIn() && me() == uid;
+        allow create: if signedIn() && me() == uid && request.resource.data.keys().size() == 0;
+        allow delete: if signedIn() && me() == uid;
+      }
+      match /reports/{uid} {
+        allow read: if isAdmin();
+        allow create: if signedIn() && me() == uid && request.resource.data.keys().size() == 0;
+      }
+    }
+
+    match /admins/{uid} {
+      allow read: if signedIn() && me() == uid;
+    }
+  }
+}
