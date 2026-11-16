@@ -243,6 +243,17 @@ nav.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surfac
 .hero .hm,.hero .bubble{cursor:pointer}
 .bar-m{pointer-events:auto;cursor:pointer}
 .cd{min-height:40px;padding:4px 0 3px}
+.seg3{position:relative;display:grid;grid-template-columns:repeat(3,1fr);margin:0 0 10px;padding:3px;border-radius:11px;background:var(--chip)}
+.seg3-th{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px) / 3);border-radius:8px;background:var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.04);transform:translateX(calc(var(--i) * 100%));transition:transform .3s var(--spring)}
+.seg3 button{position:relative;z-index:1;border:0;background:none;min-height:32px;font:inherit;font-size:13px;font-weight:600;color:var(--muted);transition:color .2s}
+.seg3 button[aria-pressed="true"]{color:var(--ink);font-weight:800}
+@media (prefers-reduced-motion:reduce){.seg3-th{transition:none}}
+.cal-day .calh{margin:0}
+.calbody.cin-r>*{animation:cinr .34s cubic-bezier(.2,.8,.2,1)}
+.calbody.cin-l>*{animation:cinl .34s cubic-bezier(.2,.8,.2,1)}
+@keyframes cinr{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes cinl{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+.daypanel{margin-top:10px}
 .calmore{display:block;width:100%;margin-top:6px;border:0;background:none;color:var(--accent);font:inherit;font-size:13px;font-weight:700;min-height:36px}
 .cal-wk .calh{margin-bottom:4px}
 .legend i.lg-ic{width:18px;height:18px;border-radius:6px;display:inline-grid;place-items:center;color:#ffffff;vertical-align:-5px}
@@ -558,6 +569,87 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
 @media (prefers-reduced-motion:reduce){.page{transition:none}.masc .bob{animation:none}}
 @media (prefers-reduced-motion:reduce){#view.enter>*,.fl,.sheet,.sheet-bg,.toast{animation:none}.btn:active,.chip:active,.q:active,.post:active,.brow:active,.cls:active,.pick:active,.linkbar:active,.now:active,.cd:active,.copy:active,.fab:active{transform:none}}
 @media (prefers-reduced-motion:reduce){.chev{transition:none}.h-train,.h-car,.h-car2{animation:none}.h-train{transform:translateX(110px)}.h-car{transform:translateX(250px)}.h-car2{transform:translateX(40px)}}
+
+/* 탭 배너: 작게 */
+.sign{margin-top:10px;padding:3px 4px;border-radius:13px}
+.sg-side{min-height:32px;font-size:12px}
+.sg-name{font-size:17px;padding:3px 14px 4px;box-shadow:0 0 0 2px rgba(0,0,0,.08)}
+.sg-sub{margin:5px 4px 0;font-size:12px}
+/* 오늘 내 수업: 시간(09:00)이 줄바꿈되지 않게 */
+.board .cls .t{width:auto;min-width:66px;display:inline-flex;align-items:center;white-space:nowrap}
+/* 꿀팁장소 목록: 4열 */
+.pgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.prow.ptile{min-height:82px;padding:8px 3px 7px;gap:4px;border-radius:12px}
+.ptile .pic{width:26px;height:26px;border-radius:8px}
+.ptile .pic .ic{width:14px;height:14px}
+.pt-n{font-size:11.5px}
+.pt-s{font-size:9.5px}
+/* 홈 제목: 흰 상자 없이, 휴대폰 크기에 맞게 */
+.hero .ht{background:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;padding:0!important;left:16px;top:14px}
+.hero h1{font-size:23px!important;text-shadow:0 1px 2px rgba(255,255,255,.55)}
+.hero p{font-size:12px;text-shadow:0 1px 2px rgba(255,255,255,.55)}
+:root[data-ut-theme="dark"] .hero h1,:root[data-ut-theme="dark"] .hero p{text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.hero .hm{width:76px!important;height:76px!important;right:12px;bottom:6px}
+.hero .bubble{right:10px!important;bottom:84px!important;font-size:11px;padding:4px 9px}
+/* 날씨 효과 */
+.hero .wx{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+.hero .ht,.hero .hm,.hero .bubble{z-index:2}
+.hero.wx-rain .wx,.hero.wx-snow .wx{background:linear-gradient(180deg,rgba(70,84,110,.32),rgba(70,84,110,.08))}
+.hero.wx-cloudy .wx,.hero.wx-cold .wx{background:linear-gradient(180deg,rgba(120,132,150,.22),transparent 70%)}
+.hero.wx-fog .wx{background:linear-gradient(180deg,rgba(235,240,245,.55),rgba(235,240,245,.25))}
+.hero.wx-rain svg>circle,.hero.wx-snow svg>circle,.hero.wx-cloudy svg>circle,.hero.wx-fog svg>circle{opacity:0}
+.wx .dr{position:absolute;top:-16px;width:1.6px;height:14px;border-radius:2px;background:linear-gradient(rgba(200,220,255,0),rgba(200,220,255,.9));transform:rotate(12deg);animation:wxrain .8s linear infinite}
+@keyframes wxrain{to{transform:translate(-36px,200px) rotate(12deg)}}
+.wx .sf{position:absolute;top:-8px;border-radius:50%;background:#ffffff;box-shadow:0 0 3px rgba(255,255,255,.8);animation:wxsnow 5s linear infinite}
+@keyframes wxsnow{0%{transform:translate(0,0)}50%{transform:translate(10px,95px)}100%{transform:translate(-6px,190px)}}
+.wx .hglow{position:absolute;right:-30px;top:-40px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(255,200,60,.75),rgba(255,140,40,.25) 45%,transparent 70%);animation:wxglow 2.4s ease-in-out infinite}
+@keyframes wxglow{50%{transform:scale(1.12);opacity:.8}}
+.wx .hw{position:absolute;left:-10%;width:120%;height:10px;border-radius:50%;background:linear-gradient(90deg,transparent,rgba(255,170,80,.22),transparent);filter:blur(2px);animation:wxheat 2.4s ease-in-out infinite}
+@keyframes wxheat{0%{transform:translateY(8px) scaleX(1);opacity:0}50%{opacity:1}100%{transform:translateY(-14px) scaleX(1.05);opacity:0}}
+.wx .cl{position:absolute;width:120px;height:34px;border-radius:30px;background:rgba(255,255,255,.85);box-shadow:30px -14px 0 4px rgba(255,255,255,.85),62px -4px 0 0 rgba(255,255,255,.8);animation:wxcloud 40s linear infinite}
+:root[data-ut-theme="dark"] .wx .cl{background:rgba(150,160,180,.35);box-shadow:30px -14px 0 4px rgba(150,160,180,.35),62px -4px 0 0 rgba(150,160,180,.3)}
+@keyframes wxcloud{from{margin-left:0}to{margin-left:140%}}
+@media (prefers-reduced-motion:reduce){.wx i{animation:none!important}}
+/* 옵션 버튼(칩): 배너보다 작게 */
+.chips{gap:6px;padding-block:2px 8px}
+.chip{min-height:30px;padding:5px 12px;font-size:12.5px}
+/* 바람: 바람 줄기와 날리는 잎 */
+.hero.wx-windy .wx{background:linear-gradient(180deg,rgba(150,165,185,.18),transparent 70%)}
+.wx .wd{position:absolute;right:-60px;height:1.6px;border-radius:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent);animation:wxwind 1.2s linear infinite}
+@keyframes wxwind{from{transform:translateX(0)}to{transform:translateX(-480px)}}
+.wx .lf{position:absolute;right:-12px;width:7px;height:4px;border-radius:60% 0;background:#8bbf5a;animation:wxleaf 3.2s ease-in infinite}
+@keyframes wxleaf{0%{transform:translate(0,0) rotate(0)}50%{transform:translate(-200px,-14px) rotate(220deg)}100%{transform:translate(-430px,18px) rotate(520deg)}}
+/* 눈 없는 겨울: 차가운 하늘빛, 바닥 서리, 반짝이는 냉기 */
+.hero.wx-cold .wx{background:linear-gradient(180deg,rgba(190,215,245,.42),rgba(210,230,250,.12))}
+.wx .frost{position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(0deg,rgba(255,255,255,.75),rgba(235,245,255,0))}
+.wx .sp{position:absolute;width:4px;height:4px;background:#ffffff;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:wxsp 2.6s ease-in-out infinite;opacity:0}
+@keyframes wxsp{50%{opacity:.95;transform:scale(1.6)}}
+.hero.wx-cold svg>circle{opacity:.45}
+/* 도시 낮·밤 (테마가 아니라 시간 기준) */
+.hero.day{--hero-sky:#e6f0ff;--hero-sky2:#f7fbff;--hero-mt:#c7dcc2;--hero-mt2:#aecaa8;--hero-bd:#d9dee8;--hero-win:#b9c7e6;--hero-gd:#eef0e4}
+.hero.night{--hero-sky:#0b1633;--hero-sky2:#22365f;--hero-mt:#1d3a31;--hero-mt2:#173027;--hero-bd:#2a3550;--hero-win:#ffd66b;--hero-gd:#2b313d}
+.hero .h-night{display:none;fill:#ffffff}
+.hero.night .h-night{display:inline}
+.hero.night .h-sun{display:none}
+.hero .h-moonc{fill:var(--hero-sky)}
+.hero.night .h-night>circle:nth-child(n+3){animation:twinkle 3s ease-in-out infinite}
+.hero.night .h-night>circle:nth-child(2n+3){animation-delay:1.4s}
+@keyframes twinkle{50%{opacity:.35}}
+.hero.night .h-win:nth-of-type(3n){fill:#3b4766}
+.hero.night .ht h1,.hero.night .ht p{color:#f1f5ff!important;text-shadow:0 1px 3px rgba(0,0,0,.65)!important}
+.hero.day .ht h1{color:#15191e!important}.hero.day .ht p{color:#4b5563!important}
+.hero.night.wx-rain .wx,.hero.night.wx-snow .wx{background:linear-gradient(180deg,rgba(10,16,30,.35),rgba(10,16,30,.1))}
+@media (prefers-reduced-motion:reduce){.hero .h-night>circle{animation:none!important}}
+.hero.wx-rain .h-night,.hero.wx-snow .h-night,.hero.wx-cloudy .h-night,.hero.wx-fog .h-night{display:none!important}
+/* 게시판 검색·키워드 */
+.bq{display:flex;gap:8px;margin:4px 0 10px}
+.bq input{flex:1;min-width:0;padding:11px 14px;border:0;border-radius:12px;background:var(--surface);box-shadow:var(--sh);color:var(--ink);font:inherit;font-size:15px}
+.kwbox{background:var(--surface);border-radius:14px;box-shadow:var(--sh);padding:12px 14px;margin-bottom:12px}
+.kwh{font-size:13px;font-weight:800;margin-bottom:8px}
+.kwl{display:flex;flex-wrap:wrap;gap:6px}
+.kw{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;background:var(--chip);color:var(--ink);font:inherit;font-size:13px;padding:6px 12px;min-height:32px}
+.kw b{color:#ff5a36;font-size:12px}
+.kwn{margin:8px 0 0;font-size:11.5px;color:var(--muted)}
 </style><div id="root"></div><script id="tips-data" type="application/json">[{"id":"x1","cat":"교통","title":"999번 버스","body":"학교 안(인문사회관·대학본부·체육관 앞)까지 들어와 충주역·터미널로 가는 노선. 학기 중 평일만(첫차 08:15). 시간표는 에브리타임에서 '999' 검색","where":"","date":"2026-10-07","src":"운영진 정리","rec":7},{"id":"x2","cat":"교통","title":"무료 통학버스","body":"충주터미널 08:37→충주역 08:40→캠퍼스 08:55 (하교 17:50). 무료, 학기 중만. 청주·이천 노선은 편도 3,500원(PAYCO)","where":"","date":"2026-10-06","src":"운영진 정리","rec":4},{"id":"x3","cat":"교통","title":"택시 시외할증 면제","body":"대학로↔시내 택시에서 학생증(실물 권장, 모바일도 가능) 보여주면 시외할증 면제","where":"","date":"2026-10-06","src":"운영진 정리","rec":4},{"id":"x4","cat":"교통","title":"렌트카 이용","body":"버스가 불편해 렌트 추천. 도서관 앞 투루카 앱으로 간단히 렌트","where":"","date":"","src":"운영진 정리","rec":2},{"id":"x5","cat":"교통","title":"주말·방학 버스 공백 대비","body":"999·700번과 통학버스는 주말·방학에 없음. 주말엔 151·152·157번이나 111·112번 시내버스(1,700원)","where":"","date":"2026-10-06","src":"운영진 정리","rec":2},{"id":"x6","cat":"교통","title":"카카오맵으로 버스 확인","body":"네이버지도보다 카카오맵 버스 시간이 정확. 정류장 저장해 실시간 확인","where":"","date":"","src":"운영진 정리","rec":2},{"id":"x7","cat":"교통","title":"700번 대학순환버스","body":"하루 4회, 교통대→건국대→연수동→터미널 순환. 주말·공휴일·방학엔 운행 안 함","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x8","cat":"교통","title":"KTX-이음으로 판교 가기","body":"충주역→판교 약 1시간 5분, 일반실 12,300원","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x9","cat":"교통","title":"대소원면 콜버스","body":"현금 1,000원·카드 900원 호출형 버스. 40분 안 2회 무료 환승","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x10","cat":"교통","title":"대전·청주 기차는 주덕역","body":"주덕역이 충주역보다 가깝고 표값도 저렴","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x11","cat":"교통","title":"인천공항행 시외버스","body":"충주공용버스터미널에서 리무진 탑승. 방학 땐 버스타고 앱으로 미리 예매","where":"","date":"2026-10-07","src":"운영진 정리","rec":1},{"id":"x12","cat":"교통","title":"정문 경유 시내버스","body":"오전엔 주덕 방면 시내버스가 정문에 들렀다 감(141·122·151번 등). 충주시 버스 정보로 재확인","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x13","cat":"교통","title":"충주에서 대전 가기","body":"충주터미널→대전복합 하루 4회, 1시간 33분, 11,900원","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x14","cat":"교통","title":"충주에서 동서울 가기","body":"충주터미널→동서울 하루 35회, 약 2시간, 9,000원","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x15","cat":"동아리·행사","title":"동아리 가입","body":"통합정보시스템→학생지원→동아리가입신청. 3·9월 초중반. 총동아리연합회 인스타 참고","where":"","date":"2026-10-06","src":"운영진 정리","rec":4},{"id":"x16","cat":"동아리·행사","title":"동아리 면접 준비","body":"지원 이유·참여 가능 시간 등 예상 질문 준비. 모임 시간·회비 확인","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x17","cat":"동아리·행사","title":"사랑방(연극 동아리)","body":"40년 된 연극 동아리. 배우 외 조명·음향·무대 팀도 있음","where":"","date":"","src":"운영진 정리","rec":1},{"id":"x18","cat":"생활","title":"배달비 아끼기","body":"요기요 멤버십(네이버 멤버십 포함) 무료배달, 포장 할인. 직접 포장 추천","where":"","date":"2026-10-06","src":"운영진 정리","rec":3},{"id":"x19","cat":"생활","title":"원룸 구하기","body":"대부분 연세 계약. 블루밍 앱·에브리타임 참고, 계약 전 등기부등본·밤 소음 확인","where":"","date":"2026-10-06","src":"운영진 정리","rec":3},{"id":"x20","cat":"생활","title":"교재 싸게 사기","body":"PDF·도서관 먼저 확인, 중고 거래 앱나 e-서점으로 30% 이상 저렴","where":"","date":"2026-10-06","src":"운영진 정리","rec":2},{"id":"x21","cat":"생활","title":"대학로 물가와 주말 분위기","body":"대학가치고 밥값 비싼 편, 주말엔 조용함","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x22","cat":"생활","title":"또래오래 순두부찌개 서비스","body":"대학로 또래오래에서 소주 시키면 순두부찌개 서비스","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x23","cat":"생활","title":"로켓프레시","body":"충주에서도 로켓프레시로 식재료 구매 가능","where":"","date":"","src":"운영진 정리","rec":1},{"id":"x24","cat":"생활","title":"술자리에서 살아남기","body":"주량대로 마시기, 강요하는 자리는 피하기","where":"","date":"","src":"운영진 정리","rec":1},{"id":"x25","cat":"생활","title":"지역화폐(충주사랑상품권)","body":"충전 시 10% 인센티브, 대학로 대부분 사용 가능","where":"","date":"","src":"운영진 정리","rec":1},{"id":"x26","cat":"생활","title":"충주 번화가","body":"연수동이 번화가, 호암동·용산동도 놀거리","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x27","cat":"생활관·주거","title":"생활관 벌점·외박 규칙","body":"점호 23:30, 01:00~04:00 출입통제. 벌점 8점 다음 학기 입사 불가, 10점 퇴사. 외박은 23:00 전 신청, 월 8회","where":"","date":"2026-10-06","src":"운영진 정리","rec":4},{"id":"x28","cat":"식사","title":"천원의 아침밥","body":"PAYCO로 결제해 1,000원 아침밥. 선착순이라 공지 확인","where":"","date":"2026-10-06","src":"운영진 정리","rec":2},{"id":"x29","cat":"식사","title":"PAYCO 앱 활용","body":"통학버스 승차권, 천원의 아침밥, 바코드 결제","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x30","cat":"식사","title":"학식 메뉴 확인","body":"학교 홈페이지 식단안내 또는 스마트모바일 앱","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x31","cat":"유학생","title":"외국인 유학생 계좌 개설","body":"W5 1층 농협에서 외국인등록증·여권·입학허가서로 개설","where":"","date":"2026-10-07","src":"운영진 정리","rec":1},{"id":"x32","cat":"유학생","title":"외국인등록증(ARC) 발급·연장","body":"입국 90일 안 등록, E18 국제교류본부에서 대행","where":"","date":"2026-10-07","src":"운영진 정리","rec":1},{"id":"x33","cat":"장학·돈","title":"국가근로장학금","body":"한국장학재단 신청 후 희망근로지 신청(1순위 우선 선발). 백분위 70점·9구간 이하. 2026-2학기 교내 시급 10,320원","where":"","date":"2026-10-06","src":"운영진 정리","rec":4},{"id":"x34","cat":"장학·돈","title":"국가장학금 놓치지 않기","body":"1차 신청(보통 11월 하순~12월 하순)에 신청하고 가구원 동의까지 완료","where":"","date":"2026-10-06","src":"운영진 정리","rec":2},{"id":"x35","cat":"장학·돈","title":"교내 장학금 평점 기준","body":"성적우수 2.8 이상·12학점, 공로 2.5 이상 등. 학기마다 바뀔 수 있음","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x36","cat":"장학·돈","title":"등록금 분할납부","body":"통합정보시스템→등록→분납신청(2·3·4회). 카드 납부 불가","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x37","cat":"장학·돈","title":"인문100년 장학금","body":"인문·사회계열 신입생·3학년 대상. 등록금 전액+생활비","where":"","date":"2026-10","src":"운영진 정리","rec":1},{"id":"x38","cat":"장학·돈","title":"청년월세 지원","body":"만 19~34세 무주택 청년, 월 최대 20만 원·24개월. 2026년 신청은 마감","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x39","cat":"캠퍼스 이동","title":"ICT관 편하게 가는 길","body":"종합강의동 엘리베이터 4층→다리→대학본부 엘리베이터 4층→ICT관","where":"","date":"2026-10-06","src":"운영진 정리","rec":3},{"id":"x40","cat":"캠퍼스 이동","title":"인문사회관은 건축관 엘리베이터로","body":"건축관 엘리베이터 타고 3층에서 내리면 오르막 생략","where":"","date":"2026-10-06","src":"운영진 정리","rec":3},{"id":"x41","cat":"캠퍼스 이동","title":"경영항공관 쉽게 올라가기","body":"대학본부 엘리베이터 이용, 종합강의관 4층 하늘다리로 연결","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x42","cat":"캠퍼스 이동","title":"인문사회관은 건설환경관 엘리베이터로","body":"건설환경관 엘리베이터로 오르막 거리 단축","where":"","date":"2026-08","src":"운영진 정리","rec":1},{"id":"x43","cat":"학교생활","title":"교내 와이파이","body":"WI_KNUT 접속 후 무선 등록 페이지에 학교 계정 입력, 기기 재시작","where":"","date":"2026-10-06","src":"운영진 정리","rec":2},{"id":"x44","cat":"학교생활","title":"모바일 학생증","body":"스마트모바일 앱→스마트신분증. 도서관 출입·대출에 사용, QR 2분마다 갱신","where":"","date":"2026-10-06","src":"운영진 정리","rec":2},{"id":"x45","cat":"학교생활","title":"강의실·세미나실 빌리기","body":"학교 홈페이지 시설물예약","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x46","cat":"학교생활","title":"국원대동제","body":"가을 축제, 9월 말 대운동장","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x47","cat":"학교생활","title":"도서관 논문 보기","body":"도서관 사이트 로그인 후 국내·국외 논문 열람","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x48","cat":"학교생활","title":"도서관 책 대출·연장","body":"학부생 5권 10일, 홈페이지에서 1회 연장","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x49","cat":"학교생활","title":"문의 전 홈페이지 검색","body":"조교·학교에 전화하기 전 홈페이지 먼저 검색","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x50","cat":"학교생활","title":"생성형 AI 플랫폼 무료","body":"통합정보시스템에서 생성형 AI 플랫폼 무료 사용","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x51","cat":"학교생활","title":"시험기간 자리 팁","body":"도서관 3층이 꽉 차면 5층 강의실이 넓고 한산","where":"","date":"","src":"운영진 정리","rec":1},{"id":"x52","cat":"학교생활","title":"점심시간 주차","body":"종합강의동·학생회관 근처는 점심시간에 자리 많음","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x53","cat":"학교생활","title":"통합정보시스템·UTRO 매일 확인","body":"장학·행사·취업 공지 놓치지 않기","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x54","cat":"학교생활","title":"학생증 대리 출입 금지","body":"남의 학생증으로 도서관·생활관 들어가면 적발. 모바일 학생증 쓰기","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x55","cat":"학교생활","title":"한글·V3·Office 무료","body":"전산정보원(대학원 302호)에서 한글·V3 대여, Office 365 무료","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x56","cat":"학사","title":"수강신청 요령","body":"장바구니만으론 신청 아님, 최종 기간에 '신청' 눌러야 확정. 최근 로그인 기기 1대만. 경쟁 센 교양부터, 서버 시간 맞추기","where":"","date":"2026-10-06","src":"운영진 정리","rec":5},{"id":"x57","cat":"학사","title":"재수강 규칙","body":"C+ 이하만, 최고 A0. 학기당 6학점, 재학 중 12학점","where":"","date":"2026-10-06","src":"운영진 정리","rec":2},{"id":"x58","cat":"학사","title":"계절학기","body":"방학에 6학점까지, 10명 이상이어야 개설","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x59","cat":"학사","title":"군휴학","body":"담당 교수님 상담(필수)→학생과 접수","where":"","date":"2020-08","src":"운영진 정리","rec":1},{"id":"x60","cat":"학사","title":"수강 철회","body":"개강 후 7주 안 정해진 기간에 3과목까지. 등록금 환불 없음","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x61","cat":"학사","title":"신입생 예비군 신고","body":"군필 신입생은 종합정보시스템에서 직장예비군 신고. 복학 때마다 다시","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x62","cat":"학사","title":"일본어 회화·교환학생","body":"1~2학년 때 일본어 회화 듣고 교환학생 준비","where":"","date":"","src":"운영진 정리","rec":1},{"id":"x63","cat":"학사","title":"졸업생 취업 통계 보기","body":"2024년 졸업생 취업률 66.5%. 학과별은 대학알리미","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x64","cat":"학사","title":"졸업요건 확인","body":"130학점 이상(학과별), 평점 1.75 이상, 졸업자격인증 3개","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x65","cat":"학사","title":"출석인정 신청","body":"결석사유서+증빙을 학과 날인 후 W5 1층 학생과에 제출. 1주 안 권장","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"x66","cat":"학사","title":"학사경고 피하기","body":"평점 1.75 미만이면 학사경고, 다음 학기 12학점 제한","where":"","date":"2026-10-06","src":"운영진 정리","rec":1},{"id":"b3","cat":"건강·상담","title":"보건실 무료 진료·약 받기","body":"대학본부 1층 보건실에서 간단한 진료와 약을 무료로 받는다(혈압·혈당·인바디 측정)\n준비물: 재학생\n시간: 09:00~18:00 (점심 12~13시 제외)","where":"","date":"2026-10","src":"팀원 조사","rec":4},{"id":"b5","cat":"편의시설","title":"교내 우체국에서 택배·우편 보내기","body":"종합강의관 1층 우편취급국에서 우편·소포를 보낸다. 당일 택배는 충주터미널 택배\n시간: 09:00~18:00 (점심 12~13시 제외)","where":"","date":"2026-10","src":"팀원 조사","rec":6},{"id":"b6","cat":"편의시설","title":"프린트·복사하는 곳","body":"종합강의관 1층 복사실·무인 프린터(흑백 약 50원), 도서관 2층·인사대·대학로 편의점에서도 출력\n준비물: 프린트 카드 또는 신용카드\n시간: 복사실 09:00~18:00","where":"","date":"2026-10","src":"팀원 조사","rec":11},{"id":"b8","cat":"식사","title":"학교 주변 배달앱 활용법","body":"요기요 멤버십 무료배달, 포장 5% 할인, 전화 주문 시 무료배달인 곳도 있다\n준비물: 요기요 앱","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b9","cat":"생활관·주거","title":"원룸 고를 때 팁","body":"원룸은 대부분 연세 계약. 블루밍 앱으로 보고 전화하는 게 가장 빠르다\n준비물: 블루밍 앱","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b12","cat":"편의시설","title":"3D프린터 무료로 쓰는 법","body":"학생회관 205호 아이디어팩토리에서 3D프린터·레이저커터를 무료로 쓴다","where":"","date":"2026-10","src":"팀원 조사","rec":2},{"id":"b16","cat":"편의시설","title":"종합강의관 1층 농협","body":"교내 농협에서 은행 업무를 본다\n시간: 09:00~16:00","where":"","date":"2026-10","src":"팀원 조사","rec":2},{"id":"b19","cat":"학사","title":"도서관 책 빌리고 연장하기","body":"중앙도서관 1층. 학부생 5권 10일, 홈페이지에서 1번 연장\n준비물: 학생증\n시간: 09:00~21:00","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b21","cat":"건강·상담","title":"무료 심리상담 받기","body":"국제청년협력센터 3층 학생상담센터에서 상담·심리검사 무료\n준비물: 사전 신청\n시간: 월~금 09:00~18:00","where":"","date":"2026-10","src":"팀원 조사","rec":2},{"id":"b22","cat":"식사","title":"도서관 3층 CU (밤 간식)","body":"도서관 3층 CU는 24시간 무인 운영\n시간: 24시간 (직원은 평일 09~18시)","where":"","date":"2026-10","src":"팀원 조사","rec":2},{"id":"b26","cat":"학사","title":"교내 서점에서 전공책 사기","body":"정문 옆 교내 서점에서 전공서적을 판다\n시간: 09:00~18:00","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b27","cat":"편의시설","title":"증명서 무료로 떼기","body":"종합강의관 1층 자동증명발급기와 온라인 발급은 무료(전자증명서는 유료)","where":"","date":"2026-10","src":"팀원 조사","rec":2},{"id":"b29","cat":"식사","title":"강의 사이 간식 (CU 강의관점)","body":"종합강의관 1층 CU\n시간: 월~목 08:30~19:30","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b32","cat":"식사","title":"교내 카페플로르 3곳","body":"복지관·휴스퀘어관·도서관 1층에 카페플로르가 있다\n시간: 복지관점 월~금 09:00~18:00","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b33","cat":"건강·상담","title":"협약 병원 할인 받기","body":"서울W치과 15%, 세명대 충주한방병원 20%, 충주의료원 20% 재학생 할인\n준비물: 학생증","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b36","cat":"교통","title":"교통대 시외·고속버스 정류소","body":"터미널까지 안 가도 학교 앞 정류소에서 서울·경기행 버스를 탄다. 금요일은 일주일 전 예매\n준비물: 고속버스 앱(티머니GO 등)\n시간: 금요일 예매 주의","where":"","date":"2026-10","src":"팀원 조사","rec":3},{"id":"b37","cat":"편의시설","title":"대학원동 ATM (신한·국민)","body":"대학원 건물 앞 ATM에서 신한·국민 입출금·통장정리","where":"","date":"2026-10","src":"팀원 조사","rec":3},{"id":"b53","cat":"장학·돈","title":"국가장학금 1차 신청","body":"1차 신청은 보통 11월 하순~12월 하순\n준비물: 한국장학재단\n시간: 11~12월","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b55","cat":"식사","title":"학식 3곳 골라 먹기","body":"대학본부·예성생활관·대원생활관 식당. 기숙사 식당도 일반 학생 이용 가능(5,000원 이하)","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b74","cat":"캠퍼스 이동","title":"캠퍼스 건물 코드 안내","body":"E구역·W구역 건물 번호와 층별 학과 안내","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b83","cat":"캠퍼스 이동","title":"언덕 위 건물 쉽게 가는 법","body":"대학본부·종합강의관 엘리베이터와 하늘다리로 오르막을 피한다","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b84","cat":"놀거리","title":"모다아울렛 (영화·옷)","body":"달천동 모다아울렛에 옷 가게와 롯데시네마가 있다","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b87","cat":"교통","title":"주말에 터미널 가는 법","body":"999·700번은 주말·방학 운행 X → 151·152 등 시내버스나 111·112번 이용\n준비물: 버스 시간표\n시간: 주말·방학","where":"","date":"2026-10","src":"팀원 조사","rec":2},{"id":"b91","cat":"편의시설","title":"큰 마트 가는 법","body":"터미널 건물 롯데마트 충주점, 학교 근처는 하나로마트 대소원지점\n시간: 10:00~23:00 (10일·25일 휴무)","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b92","cat":"교통","title":"학교 정류소에서 서울·시외버스 타기","body":"교통대 정류소에서 동서울·강남·청주·수원행 버스를 탄다\n시간: 시간표 확인 필수","where":"","date":"2026-10","src":"팀원 조사","rec":2},{"id":"b96","cat":"동아리·행사","title":"중앙동아리 정보 확인","body":"총동아리연합회 \"여정\" 인스타에서 동아리 소개를 본다\n준비물: 인스타그램","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b114","cat":"생활","title":"캠퍼스 시설 활용법","body":"교내식당·헬스장(월 2만원)·공부 장소 정리","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b122","cat":"생활관·주거","title":"자취방 계약 전 체크","body":"등기부등본·관리비 포함 항목·전입신고·밤 소음 확인\n준비물: 직방·다방 앱\n시간: 계약 전","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b128","cat":"장학·돈","title":"배달비 대신 포장하기","body":"배달비 할인이 적으니 직접 가서 포장한다","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"b129","cat":"유학생","title":"유학생 가이드북 자료 안내","body":"꿀팁이 아니라 폴더 설명 메모(내용 없음)","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"c47","cat":"장학·돈","title":"병원비 할인받는 법","body":"학교와 협약한 병원에서 재학생 할인을 받을 수 있다(학교 보건실 안내 기준).\n서울W치과병원: 재학생 비보험수가 전 항목 15% 할인.\n세명대 충주한방병원: 재학생 비보험 수가 20% 할인(녹용 포함 시 10%).\n충주의료원: 재학생은 진료비에 한해 적용, 진료비 20% 할인(본인부담액 중 비급여 항목, 재료비·주사약제료 제외).\n가기 전에 협약이 아직 유효한지 병원에 물어보는 게 좋다.","where":"","date":"2026-10-06","src":"팀원 조사","rec":1},{"id":"c65","cat":"학사","title":"도서관 정보검색 존 쓰기","body":"학술정보 검색 PC + 프린터 (50석)\n1~10번 좌석은 예약 없이, 11~50번은 좌석예약시스템으로 예약 후 이용\n운영: 학기 중 09:00~21:00\n방학 중 09:00~18:00\n프린터 카드는 종합강의동 1층 복사실에서 구입\n문의: 도서관 자료운영팀 043-841-5064","where":"","date":"2026-10-06","src":"팀원 조사","rec":1},{"id":"c68","cat":"교통","title":"충주 버스 팁","body":"- 충주는 시내버스가 많이 없고, 시간을 잘 못 지키는 경우가 많아서 카카오맵을 설치해두는 것이 좋다.\n카카오맵에 버스 아이콘을 눌러 버스 정류장을 저장해두면 실시간으로 시간이 보여서 버스때문에 화나는 일이 훨씬 줄어들 것이다!\n- 금요일이랑 일요일에 서울에서 충주로 오는 고속,시외 버스는 일주일전부터 대부분 매진이라 미리 예매를 해두자!","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"c79","cat":"교통","title":"충주 시내 즐기는 법","body":"충주는 버스 노선이 잘 되어있지 않아서 환승을 해야하는 경우가 많고 정류장에서 10분은 기본으로 걸어야한다.\n공강 시간에 더 다양하게 동기들과 연인과 놀고 싶다면 렌트하는 것을 추천. 항시 안전운전은 기본.","where":"","date":"2026-10","src":"팀원 조사","rec":1},{"id":"c125","cat":"생활","title":"한글·V3 무료로 받는 곳","body":"전산정보원에서 한글(2018~2024), V3 Campus Pack, 알툴즈 CD를 빌려준다.\nOffice 365는 재학생에게 무료다(학교 홈페이지 하단 OFFICE 365 메뉴).\nAdobe CC는 공용 PC실습실에서만 쓸 수 있다.","where":"","date":"2026-10-06","src":"팀원 조사","rec":1}]</script><script id="hours-data" type="application/json">{}</script><script id="app">
 (function(){
   /* ===== 다시 저장할 때 쓰는 페이지 틀 (운영진 꿀팁 추가 시 이 틀로 새 버전을 만든다) ===== */
@@ -1162,10 +1254,11 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     }
     return [calc(true),calc(false)];
   }
+  function isNight(){var hr=new Date().getHours();return hr<8||hr>=18} /* 도시 그림 낮·밤: 8시~18시 낮 */
   function themeNow(){if(TH!=="auto")return TH;var hr=new Date().getHours();return (hr>=8&&hr<18)?"light":"dark"} /* 자동: 08시~18시 밝게, 그 밖은 어둡게 */
   function applyTheme(){var v=themeNow();if(document.documentElement.getAttribute("data-ut-theme")!==v)document.documentElement.setAttribute("data-ut-theme",v)}
   var TH=store("ut-theme")||"auto";applyTheme();
-  setInterval(applyTheme,60000);document.addEventListener("visibilitychange",function(){if(!document.hidden)applyTheme()});
+  var LASTNIGHT=null;setInterval(function(){applyTheme();var nn=isNight();if(LASTNIGHT!==null&&nn!==LASTNIGHT&&S.tab==="home")render();LASTNIGHT=nn},60000);document.addEventListener("visibilitychange",function(){if(!document.hidden)applyTheme()});
   var SEEN=store("ut-seen");if(!SEEN){SEEN=TIPS.map(function(t){return t.id});store("ut-seen",SEEN)}
   var NEWIDS=TIPS.filter(function(t){return SEEN.indexOf(t.id)<0}).map(function(t){return t.id}),CLEARNEW=false;
   function favs(){return store("ut-fav")||[]}
@@ -1588,46 +1681,40 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   /* 통통 가이드 마스코트 "통통이": 파란 기차 얼굴, 노란 띠, 위에 집전기 */
   var MASC_N=0;
   var BARM=null;
-  function mascot(mood,cls){ /* 통통이: 전동차 앞모습 캐릭터 (오리지널). 남색 몸체·노란 안전선·LED 눈·행선지판·철길 */
+  function mascot(mood,cls){ /* 통통이: 열차 승무원 캐릭터 (오리지널). 승무원 모자·남색 제복·손 흔들기 */
     var id="mc"+(++MASC_N),think=mood==="think";
-    var eye=function(x){var y=think?44:45;
-      return '<ellipse cx="'+x+'" cy="'+y+'" rx="4.8" ry="5.6" fill="#1e2a44"/><circle cx="'+(x+1.6)+'" cy="'+(y-2.2)+'" r="1.9" fill="#ffffff"/><circle cx="'+(x-1.5)+'" cy="'+(y+2.4)+'" r=".8" fill="#ffffff" opacity=".85"/>'};
-    var mouth=think?'<ellipse cx="50" cy="54.5" rx="2" ry="2.3" fill="#1e2a44"/>'
-      :'<path d="M45 52.5 q5 4.5 10 0" stroke="#1e2a44" stroke-width="2.3" fill="none" stroke-linecap="round"/>';
-    var cheek='<ellipse cx="29.5" cy="53" rx="3.6" ry="2.2" fill="#ff9fb6" opacity=".75"/><ellipse cx="70.5" cy="53" rx="3.6" ry="2.2" fill="#ff9fb6" opacity=".75"/>';
+    var eye=function(x){var y=think?44:45;return '<ellipse cx="'+x+'" cy="'+y+'" rx="3.3" ry="4.1" fill="#2a2320"/><circle cx="'+(x+1.1)+'" cy="'+(y-1.5)+'" r="1.2" fill="#ffffff"/>'};
+    var mouth=think?'<ellipse cx="50" cy="53.5" rx="1.7" ry="1.9" fill="#7a3b2e"/>':'<path d="M46 52 q4 4 8 0" stroke="#7a3b2e" stroke-width="2" fill="none" stroke-linecap="round"/>';
     return '<svg class="masc'+(cls?" "+cls:"")+'" viewBox="0 0 100 100" aria-hidden="true"><defs>'+
-      '<linearGradient id="'+id+'b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3f7cff"/><stop offset=".55" stop-color="#1f56d6"/><stop offset="1" stop-color="#153c9e"/></linearGradient>'+
-      '<linearGradient id="'+id+'g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4faff"/><stop offset="1" stop-color="#d3e8ff"/></linearGradient>'+
-      '<linearGradient id="'+id+'k" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#102a6b"/><stop offset="1" stop-color="#0a1b47"/></linearGradient>'+
-      '<radialGradient id="'+id+'l" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#e9fdff"/><stop offset=".55" stop-color="#7ef0ff"/><stop offset="1" stop-color="#2bc4e6"/></radialGradient>'+
-      '<filter id="'+id+'x" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'+
-      '</defs>'+
-      '<g class="bob">'+
-      '<path d="M38 15 L50 7 L62 15 M44 11 L56 11" stroke="#64748b" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-      '<rect x="15" y="15" width="70" height="72" rx="20" fill="url(#'+id+'b)"/>'+
-      '<path d="M21 17.5 Q50 13 79 17.5" stroke="rgba(255,255,255,.45)" stroke-width="2" fill="none" stroke-linecap="round"/>'+
-      '<rect x="31" y="19.5" width="38" height="9.5" rx="3" fill="#0b1226"/>'+
-      '<text x="50" y="27" text-anchor="middle" font-size="7.4" font-weight="800" fill="#ffb51f" font-family="system-ui,-apple-system,sans-serif" letter-spacing=".5">통통</text>'+
-      '<rect x="21" y="32" width="58" height="30" rx="11" fill="url(#'+id+'g)"/>'+
-      '<path d="M60 33 L70 33 L58 61 L48 61 Z" fill="rgba(255,255,255,.55)"/>'+
-      eye(38)+eye(62)+mouth+cheek+
-      '<rect x="15" y="65" width="70" height="4.2" fill="#ffcc1a"/>'+
-      '<rect x="21" y="72" width="11" height="5.5" rx="2.75" fill="#fff7d1"/><rect x="68" y="72" width="11" height="5.5" rx="2.75" fill="#fff7d1"/>'+
-      '<rect x="22.5" y="73" width="4" height="2" rx="1" fill="#ffffff"/><rect x="69.5" y="73" width="4" height="2" rx="1" fill="#ffffff"/>'+
-      '<path d="M15 80 h70 v-2 q0 9 -12 9 h-46 q-12 0 -12 -9 z" fill="url(#'+id+'k)"/>'+
-      '<rect x="44" y="73" width="12" height="3.2" rx="1.6" fill="#0a1b47" opacity=".55"/>'+
-      '<circle cx="34" cy="90.5" r="4.2" fill="#1e293b"/><circle cx="66" cy="90.5" r="4.2" fill="#1e293b"/><circle cx="34" cy="90.5" r="1.5" fill="#94a3b8"/><circle cx="66" cy="90.5" r="1.5" fill="#94a3b8"/>'+
-      '</g>'+
-      '<rect x="10" y="94.6" width="80" height="2.2" rx="1.1" fill="#94a3b8"/>'+
-      '<g fill="#a16207" opacity=".55"><rect x="16" y="96.8" width="8" height="2" rx="1"/><rect x="34" y="96.8" width="8" height="2" rx="1"/><rect x="52" y="96.8" width="8" height="2" rx="1"/><rect x="70" y="96.8" width="8" height="2" rx="1"/></g>'+
-      '</svg>';
+      '<radialGradient id="'+id+'s" cx="42%" cy="38%" r="65%"><stop offset="0" stop-color="#ffe9d6"/><stop offset="1" stop-color="#f6c9a6"/></radialGradient>'+
+      '<linearGradient id="'+id+'u" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c4fa8"/><stop offset="1" stop-color="#1b336f"/></linearGradient>'+
+      '<linearGradient id="'+id+'c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a4596"/><stop offset="1" stop-color="#162a5c"/></linearGradient>'+
+      '</defs><ellipse cx="50" cy="95.5" rx="20" ry="2.6" fill="rgba(0,0,0,.15)"/><g class="bob">'+
+      '<rect x="41" y="82" width="7" height="10" rx="3" fill="#1b2f63"/><rect x="52" y="82" width="7" height="10" rx="3" fill="#1b2f63"/>'+
+      '<ellipse cx="44.2" cy="92.6" rx="5" ry="2.6" fill="#2b2b33"/><ellipse cx="55.8" cy="92.6" rx="5" ry="2.6" fill="#2b2b33"/>'+
+      '<path d="M36.5 66 L31 79" stroke="url(#'+id+'u)" stroke-width="8" stroke-linecap="round"/><circle cx="30.6" cy="80.6" r="3.9" fill="#ffffff" stroke="#e2e8f0" stroke-width=".6"/>'+
+      '<path d="M63.5 66 L74 56.5" stroke="#22408a" stroke-width="8" stroke-linecap="round"/><circle cx="75.6" cy="54.6" r="4.1" fill="#ffffff" stroke="#e2e8f0" stroke-width=".6"/>'+
+      '<path d="M71 48.5 q2 -3 5 -2.2 M78.5 47.5 q2.2 1.2 2 4" stroke="#cbd5e1" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
+      '<path d="M35 64 q15 -6 30 0 l2 18 q-17 4 -34 0 z" fill="url(#'+id+'u)"/>'+
+      '<path d="M43 61.5 L50 70 L57 61.5 Z" fill="#ffffff"/><path d="M49 66 L51 66 L52.2 74 L50 76.5 L47.8 74 Z" fill="#e23b3b"/>'+
+      '<circle cx="50" cy="78.5" r="1.2" fill="#facc15"/><rect x="33.5" y="79" width="33" height="2" rx="1" fill="#facc15" opacity=".9"/>'+
+      '<circle cx="28.5" cy="45" r="3.6" fill="#f6c9a6"/><circle cx="71.5" cy="45" r="3.6" fill="#f6c9a6"/>'+
+      '<circle cx="50" cy="42" r="21.5" fill="url(#'+id+'s)"/>'+
+      '<path d="M29.5 38 q3 -9 12 -9 q-2 5 -1 8 q4 -6 11 -6 q-1 4 0 6 q5 -5 12 -4 q4 2 5 7 q-3 -2 -6 -2 q-20 -1 -33 0 z" fill="#4a3226"/>'+
+      '<path d="M29 31 q0 -15 21 -16 q21 1 21 16 z" fill="url(#'+id+'c)"/>'+
+      '<rect x="28" y="28.5" width="44" height="4" rx="1.5" fill="#facc15"/>'+
+      '<path d="M27 33 q23 6 46 0 q-2 4 -23 5 q-21 -1 -23 -5 z" fill="#0f1d40"/>'+
+      '<circle cx="50" cy="22.5" r="4.6" fill="#facc15"/><rect x="47.2" y="20.4" width="5.6" height="3.2" rx="1" fill="#1b336f"/><circle cx="48.4" cy="24.4" r=".7" fill="#1b336f"/><circle cx="51.6" cy="24.4" r=".7" fill="#1b336f"/>'+
+      '<path d="M35 22 q4 -4 9 -4.5" stroke="rgba(255,255,255,.35)" stroke-width="1.6" fill="none" stroke-linecap="round"/>'+
+      eye(42)+eye(58)+mouth+
+      '<ellipse cx="36.5" cy="50.5" rx="3.6" ry="2.2" fill="#ff9aae" opacity=".7"/><ellipse cx="63.5" cy="50.5" rx="3.6" ry="2.2" fill="#ff9aae" opacity=".7"/>'+
+      '</g></svg>';
   }
   function homeView(){
     var now=new Date(),di=(now.getDay()+6)%7,nm=now.getHours()*60+now.getMinutes(),h="";
-    /* 홈 순서: 4버튼 → 오늘의 HOT 이슈 → 오늘 내 수업 → 오늘 할 일 → 할 일 달력 → 오늘 뭐 먹지 → 링크 모음 */
+    /* 홈 순서: 4버튼 → 오늘 내 수업 → 할 일 달력(하루/한주/한달) → 오늘의 HOT 이슈 → 오늘 뭐 먹지 → 링크 모음 */
     var Q=[["음식","place","food","eat","sg"],["편의","place","life","conv","sg"],["교통","transit","","bus",""],["학사","acad","","cal",""]];
     h+='<div class="grid g4" style="margin-top:4px;margin-bottom:16px">'+Q.map(function(q){return '<button class="q" data-go="'+q[1]+'" data-gc="'+q[2]+'"><span class="qi '+q[4]+'">'+ico(q[3])+'</span>'+q[0]+'</button>'}).join("")+'</div>';
-    h+=hotHtml()+'<div style="height:16px"></div>';
     var tt=store("ut-tt")||[],tc=tt.filter(function(c){return c.day===di}).sort(function(a,b){return toMin(a.t)-toMin(b.t)});
     h+='<div class="today board"><div class="th"><b><small>DEPARTURES · 출발 안내</small>오늘 내 수업</b><button class="more" data-go="my" data-gc="tt">'+(tt.length?"편집":"시간표 넣기")+'</button></div>';
     if(!tt.length)h+='<p class="hint" style="padding:0 16px 14px;margin:0">수업과 강의실(E14-205)을 넣으면 오늘 갈 건물을 알려 드려요.</p>';
@@ -1638,14 +1725,9 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
       h+='<div style="height:6px"></div>';
     }
     h+='</div>';
-    var td=today(),all=todos(),tl=all.filter(function(t){return !t.done&&t.date<=td}).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0}),tdn=all.filter(function(t){return t.done&&t.doneAt===td});
-    h+='<div class="today" style="margin-top:12px"><div class="th"><b>오늘 할 일'+(tl.length?' '+tl.length:'')+'</b>'+(tdn.length?'<span class="sub">'+tdn.length+'개 끝냄</span>':'')+'</div>';
-    tl.slice(0,5).forEach(function(t){h+=todoRow(t)});
-    if(tl.length>5)h+='<p class="hint" style="padding:0 16px;margin:4px 0">외 '+(tl.length-5)+'개</p>';
-    tdn.forEach(function(t){h+=todoRow(t)}); /* 오늘 끝낸 일은 줄 그은 채로 남긴다(다시 누르면 취소) */
-    h+='<form id="todoquick" class="tq"><input id="tq-text" maxlength="60" placeholder="할 일 추가" aria-label="새 할 일"><button class="copy" type="submit">추가</button></form></div>';
     /* 할 일 달력 (MY에서 옮겨 옴): 날짜를 누르면 그날 할 일을 보고 추가 */
-    h+='<div style="height:12px"></div>'+calHtml(true);
+    h+='<div style="height:14px"></div>'+calHtml(true);
+    h+='<div style="height:6px"></div>'+hotHtml();
     h+='<button class="pick" data-pick="1">'+ico("dice")+'<span class="main"><span class="name" style="display:block">오늘 뭐 먹지?</span><span class="sub" style="display:block">시내·학교 근처 중 고르고 돌림판을 돌려요</span></span></button>';
     h+='<button class="linkbar" data-go="links">'+ico("link")+'<span class="main"><span class="name" style="display:block">교통대 링크 모음</span><span class="sub" style="display:block">포털, ecampus, 도서관, 식단, 통학버스, 공식 블로그</span></span>'+ico("down","chev")+'</button>';
     return h+'<p class="foot">학생이 만든 비공식 가이드 · <a href="https://www.ut.ac.kr" target="_blank" rel="noopener">학교 홈페이지</a></p>';
@@ -1863,6 +1945,8 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     return ev;
   }
   function calHtml(home){
+    /* 보기 방식(하루/한주/한달)은 사람마다 고른 대로 이 폰에 저장 */
+    var mode=home?(store("ut-calview")||"week"):"month";
     var now=new Date();if(S.calY==null){S.calY=now.getFullYear();S.calM=now.getMonth()}
     var y=S.calY,m=S.calM,td=today(),sel=S.calD||td,first=(new Date(y,m,1).getDay()+6)%7,days=new Date(y,m+1,0).getDate(),ev=calEvents(),by={};
     todos().forEach(function(t){(by[t.date]=by[t.date]||[]).push(t)});
@@ -1871,28 +1955,29 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
       (ev[k]||[]).forEach(function(e){if(dots.indexOf(e.c)<0)dots+='<i class="'+e.c+'"></i>'});
       return '<button class="cd'+(k===td?" today":"")+(k===sel?" sel":"")+(dow===6?" sun":dow===5?" sat":"")+'" data-cal="'+k+'" aria-label="'+(mm+1)+'월 '+d+'일'+(und?', 할 일 '+und+'개':'')+'"><span class="n">'+d+'</span><span class="dots">'+dots+'</span></button>'};
     var wd='';DAYN.forEach(function(d,i){wd+='<div class="calw'+(i===6?" sun":i===5?" sat":"")+'">'+d+'</div>'});
-    var h;
-    if(home&&!S.calOpen){ /* 주간 보기: 고른 날이 있는 한 주 */
-      var sp=sel.split("-"),sd=new Date(+sp[0],+sp[1]-1,+sp[2]),mon=new Date(sd);mon.setDate(sd.getDate()-((sd.getDay()+6)%7));
-      h='<div class="cal cal-wk"><div class="calh"><button class="calnav" data-calwk="-7" aria-label="이전 주">‹</button><b>'+(mon.getMonth()+1)+'월 '+mon.getDate()+'일 주</b><button class="calnav" data-calwk="7" aria-label="다음 주">›</button></div><div class="calg">'+wd;
+    var sp=sel.split("-"),sd=new Date(+sp[0],+sp[1]-1,+sp[2]),dw=DAYN[(sd.getDay()+6)%7];
+    var MODES=[["day","하루"],["week","한 주"],["month","한 달"]],mi=MODES.map(function(o){return o[0]}).indexOf(mode);
+    var sw=home?'<div class="seg3" role="group" aria-label="달력 보기" style="--i:'+mi+'"><span class="seg3-th"></span>'+MODES.map(function(o){return '<button data-calview="'+o[0]+'" aria-pressed="'+(mode===o[0])+'">'+o[1]+'</button>'}).join("")+'</div>':"",h="";
+    if(mode==="day"){
+      h+='<div class="cal cal-day">'+sw+'<div class="calbody"><div class="calh"><button class="calnav" data-calwk="-1" aria-label="전날">‹</button><b>'+(sd.getMonth()+1)+'월 '+sd.getDate()+'일 ('+dw+')'+(sel===td?' · 오늘':'')+'</b><button class="calnav" data-calwk="1" aria-label="다음날">›</button></div>'+(sel!==td?'<button class="calmore" data-cal="'+td+'">오늘로</button>':'')+'</div></div>';
+    }else if(mode==="week"){
+      var mon=new Date(sd);mon.setDate(sd.getDate()-((sd.getDay()+6)%7));
+      h+='<div class="cal cal-wk">'+sw+'<div class="calbody"><div class="calh"><button class="calnav" data-calwk="-7" aria-label="이전 주">‹</button><b>'+(mon.getMonth()+1)+'월 '+mon.getDate()+'일 주</b><button class="calnav" data-calwk="7" aria-label="다음 주">›</button></div><div class="calg">'+wd;
       for(var wi=0;wi<7;wi++){var dt=new Date(mon);dt.setDate(mon.getDate()+wi);h+=cell(ymd(dt.getFullYear(),dt.getMonth(),dt.getDate()),dt.getDate(),dt.getMonth(),wi)}
-      h+='</div><button class="calmore" data-calopen="1">한 달 보기 ▾</button></div>';
+      h+='</div></div></div>';
     }else{
-    h='<div class="cal"><div class="calh"><button class="calnav" data-calnav="-1" aria-label="이전 달">‹</button><b>'+y+'년 '+(m+1)+'월</b><button class="calnav" data-calnav="1" aria-label="다음 달">›</button></div><div class="calg">'+wd;
-    for(var i=0;i<first;i++)h+='<span></span>';
-    for(var d=1;d<=days;d++){
-      var k=ymd(y,m,d),l=by[k]||[],und=l.filter(function(t){return !t.done}).length,dots="",dow=(first+d-1)%7;
-      if(und)dots+='<i class="d-todo"></i>';else if(l.length)dots+='<i class="d-done"></i>';
-      (ev[k]||[]).forEach(function(e){if(dots.indexOf(e.c)<0)dots+='<i class="'+e.c+'"></i>'});
-      h+='<button class="cd'+(k===td?" today":"")+(k===sel?" sel":"")+(dow===6?" sun":dow===5?" sat":"")+'" data-cal="'+k+'" aria-label="'+(m+1)+'월 '+d+'일'+(und?', 할 일 '+und+'개':'')+'"><span class="n">'+d+'</span><span class="dots">'+dots+'</span></button>';
+      h+='<div class="cal">'+sw+'<div class="calbody"><div class="calh"><button class="calnav" data-calnav="-1" aria-label="이전 달">‹</button><b>'+y+'년 '+(m+1)+'월</b><button class="calnav" data-calnav="1" aria-label="다음 달">›</button></div><div class="calg">'+wd;
+      for(var i=0;i<first;i++)h+='<span></span>';
+      for(var d=1;d<=days;d++)h+=cell(ymd(y,m,d),d,m,(first+d-1)%7);
+      h+='</div><div class="legend" style="margin-top:8px"><span><i class="d-todo"></i>할 일</span><span><i class="d-done"></i>다 끝냄</span><span><i class="d-dd"></i>D-day</span><span><i class="d-ac"></i>학사 일정</span></div></div></div>';
     }
-    h+='</div><div class="legend" style="margin-top:8px"><span><i class="d-todo"></i>할 일</span><span><i class="d-done"></i>다 끝냄</span><span><i class="d-dd"></i>D-day</span><span><i class="d-ac"></i>학사 일정</span></div>'+(home?'<button class="calmore" data-calopen="0">한 주만 보기 ▴</button>':'')+'</div>';
-    }
-    if(home){var ndone=todos().filter(function(t){return t.done}).length;if(ndone)h+='<div class="acts" style="margin-top:8px;justify-content:flex-end"><button class="more" data-tclear="1">완료한 일 '+ndone+'개 지우기</button></div>';if(sel===td)return h} /* 홈: 오늘은 위 '오늘 할 일'이 대신한다 */
-    var sl=(by[sel]||[]).slice().sort(function(a,b){return (a.done?1:0)-(b.done?1:0)}),p=sel.split("-"),dw=DAYN[(new Date(+p[0],+p[1]-1,+p[2]).getDay()+6)%7];
-    h+=h2((+p[1])+"월 "+(+p[2])+"일 ("+dw+")"+(sel===td?" · 오늘":""));
-    (ev[sel]||[]).forEach(function(e){h+='<p class="hint" style="margin:0 0 6px"><i class="evdot '+e.c+'"></i>'+esc(e.t)+'</p>'});
-    h+='<div class="today">'+(sl.length?sl.map(todoRow).join(""):'<p class="hint" style="padding:12px 16px;margin:0">이날 할 일이 없어요. 아래에 적어서 추가하세요.</p>')+'<form id="tododay" class="tq"><input id="tc-text" maxlength="60" placeholder="'+(+p[1])+'/'+(+p[2])+' 할 일 입력" aria-label="이날 할 일"><input type="hidden" id="tc-date" value="'+sel+'"><button class="copy" type="submit">추가</button></form></div>';
+    /* 고른 날의 할 일 (오늘이면 밀린 일도 함께) */
+    var sl=(by[sel]||[]).slice();if(sel===td)sl=todos().filter(function(t){return !t.done&&t.date<td}).concat(sl);
+    sl.sort(function(a,b){return (a.done?1:0)-(b.done?1:0)});
+    var nd=sl.filter(function(t){return !t.done}).length;
+    h+='<div class="today daypanel"><div class="th"><b>'+(mode==="day"?(sel===td?"오늘 할 일":"이날 할 일"):(sd.getMonth()+1)+"월 "+sd.getDate()+"일 ("+dw+")"+(sel===td?" · 오늘":""))+(nd?' '+nd:'')+'</b></div>';
+    (ev[sel]||[]).forEach(function(e){h+='<p class="hint" style="margin:0;padding:8px 16px 0"><i class="evdot '+e.c+'"></i>'+esc(e.t)+'</p>'});
+    h+=(sl.length?sl.map(todoRow).join(""):'<p class="hint" style="padding:10px 16px;margin:0">'+(sel===td?"오늘":"이날")+' 할 일이 없어요. 아래에 적어서 추가하세요.</p>')+'<form id="tododay" class="tq"><input id="tc-text" maxlength="60" placeholder="'+(sd.getMonth()+1)+'/'+sd.getDate()+' 할 일 입력" aria-label="이날 할 일"><input type="hidden" id="tc-date" value="'+sel+'"><button class="copy" type="submit">추가</button></form></div>';
     return h;
   }
   function myView(){
@@ -1953,8 +2038,8 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   }
   /* ===== 게시판 (Firebase Firestore + 익명 로그인) =====
      운영자가 Firebase 프로젝트를 만든 뒤 FB_CONFIG에 설정값을 넣으면 열린다. 방법: 저장소의 FIREBASE_SETUP.md */
-  var FB_CONFIG=null;
-  var BCATS=["꿀팁","자유","질문","정보","분실물"];
+  var FB_CONFIG={apiKey:"AIzaSyD9qOAdUOfG2rR_VDSewasV2ExtOy-8dV8",authDomain:"knut-pass.firebaseapp.com",projectId:"knut-pass",storageBucket:"knut-pass.firebasestorage.app",messagingSenderId:"66234182252",appId:"1:66234182252:web:59f08b9d6efc46e4ba0649"}; /* Firebase 웹 설정값(공개돼도 되는 값). 권한은 firestore.rules가 막는다 */
+  var BCATS=["꿀팁","질문","정보"];
   var PUBLIC_SITE=/github\.io$/.test(location.hostname)||location.hostname==="localhost"||location.hostname==="127.0.0.1";
   var FB={ready:false,loading:false,err:null,db:null,uid:null,admin:false,posts:[],loaded:false,unsub:null,cunsub:null,q:[]};
   /* ===== 꿀팁 따봉·조회수, 오늘의 HOT 이슈 =====
@@ -2033,12 +2118,56 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     var hid=(p.reportCount||0)>=5;
     return '<button class="post" data-post="'+esc(p.id)+'"><div class="pt">'+(hid?'<span class="sub">신고가 쌓여 가려진 글이에요</span>':esc(p.title))+'</div>'+(hid?'':'<div class="pb">'+esc(p.body)+'</div>')+'<div class="pm"><span class="pill">'+esc(p.cat)+'</span><span>'+esc(p.nick||"익명")+'</span>'+badgeHtml(p.badges,1)+'<span>'+ago(p.createdAt)+'</span><span class="lk">'+ico("heart")+' '+(p.likeCount||0)+'</span><span class="cm">'+ico("chat")+' '+(p.commentCount||0)+'</span></div></button>';
   }
+  /* ===== 게시판 검색 + 오늘 많이 찾는 키워드 =====
+     kw/{kw_한국날짜번호}: {counts:{키워드:횟수}} — 날짜마다 새 문서라 다음 날 순위가 저절로 처음부터 시작
+     결과가 하나라도 나온 검색어만, 한 사람이 같은 단어는 하루 한 번만 센다 */
+  var KW={top:[],at:0,busy:false,day:0};
+  var KW_SUGGEST=["수강신청","학식","통학버스","기숙사","장학금","프린트","999번"]; /* 서버 연결 전 보여 줄 추천어 */
+  function kwNorm(s){return String(s||"").replace(/[^가-힣A-Za-z0-9 ]/g," ").replace(/\s+/g," ").trim().toLowerCase().slice(0,20)}
+  function boardSearch(q){
+    var w=kwNorm(q).split(" ").filter(Boolean);if(!w.length)return {tips:[],posts:[]};
+    var score=function(title,body,cat){var t=(title||"").toLowerCase(),b=((body||"")+" "+(cat||"")).toLowerCase(),s=0;for(var i=0;i<w.length;i++){var hit=false;if(t.indexOf(w[i])>-1){s+=3;hit=true}if(b.indexOf(w[i])>-1){s+=1;hit=true}if(!hit)return 0}return s};
+    var tips=TIPS.map(function(t){return {t:t,s:score(t.title,t.body,t.cat)}}).filter(function(x){return x.s>0}).sort(function(a,b){return b.s-a.s||(b.t.rec||0)-(a.t.rec||0)}).map(function(x){return x.t});
+    var posts=(FB.posts||[]).filter(function(p){return (p.reportCount||0)<5}).map(function(p){return {p:p,s:score(p.title,p.body,p.cat)}}).filter(function(x){return x.s>0}).sort(function(a,b){return b.s-a.s}).map(function(x){return x.p});
+    return {tips:tips,posts:posts};
+  }
+  function boardResultsHtml(q){
+    var r=boardSearch(q),n=r.tips.length+r.posts.length;
+    if(!kwNorm(q))return "";
+    if(!n)return '<p class="empty">"'+esc(q)+'"에 맞는 글이 아직 없어요.<br>다른 말로 찾아보거나 질문 게시판에 물어보세요.</p>';
+    return (r.posts.length?h2("학생들이 쓴 글 "+r.posts.length)+'<div class="group">'+r.posts.slice(0,20).map(postRow).join("")+'</div>':"")+(r.tips.length?h2("꿀팁 "+r.tips.length)+tipList(r.tips.slice(0,30)):"");
+  }
+  function kwHtml(){
+    var live=BOARD_LIVE&&KW.top.length,list=live?KW.top.map(function(x){return x[0]}):KW_SUGGEST.slice(0,5);
+    return '<div class="kwbox"><div class="kwh">'+(live?"오늘 많이 찾는 키워드":"신입생이 많이 찾는 키워드")+'</div><div class="kwl">'+list.map(function(k,i){return '<button class="kw" data-kw="'+esc(k)+'"><b>'+(i+1)+'</b>'+esc(k)+'</button>'}).join("")+'</div>'+
+      (live?'':'<p class="kwn">'+(BOARD_LIVE?"오늘은 아직 검색이 없어요. 위 키워드는 추천이에요.":"게시판 서버가 연결되면 그날 실제로 많이 찾는 키워드 순위로 바뀌어요. 다음 날엔 순위가 새로 시작돼요.")+'</p>')+'</div>';
+  }
+  function boardSearchHtml(){
+    loadKw();
+    return '<form id="bqform" class="bq"><input id="bq" type="search" maxlength="30" placeholder="궁금한 걸 검색해 보세요 (예: 수강신청, 통학버스)" value="'+esc(S.bq||"")+'" aria-label="게시판 검색" enterkeyhint="search"><button class="copy" type="submit">검색</button></form>'+
+      '<div id="kwwrap">'+kwHtml()+'</div><div id="bres">'+boardResultsHtml(S.bq||"")+'</div>'+
+      (BOARD_LIVE&&FB.loaded&&!S.bq?h2("최근 글")+'<div class="group">'+FB.posts.slice(0,15).map(postRow).join("")+'</div>':"");
+  }
+  function loadKw(){
+    if(!BOARD_LIVE||KW.busy||(KW.day===dayNum()&&Date.now()-KW.at<120000))return;KW.busy=true;
+    fbLoad(function(){FB.db.collection("kw").doc(String(dayNum())).collection("k").orderBy("n","desc").limit(5).get().then(function(s){
+      KW.top=s.docs.map(function(d){return [d.id,d.data().n||0]});
+      KW.day=dayNum();KW.at=Date.now();KW.busy=false;var el=document.getElementById("kwwrap");if(el)el.innerHTML=kwHtml();
+    },function(){KW.busy=false;KW.at=Date.now()})});
+  }
+  function countKw(q){ /* 결과가 있는 검색어만, 사람마다 하루 한 번 */
+    var k=kwNorm(q);if(!BOARD_LIVE||k.length<2)return;var r=boardSearch(k);if(!r.tips.length&&!r.posts.length)return;
+    var mk="ut-kw-"+dayNum(),done=store(mk)||[];if(done.indexOf(k)>-1)return;done.push(k);store(mk,done);
+    fbLoad(function(){var ref=FB.db.collection("kw").doc(String(dayNum())).collection("k").doc(k);
+      FB.db.runTransaction(function(tx){return tx.get(ref).then(function(s){if(s.exists)tx.update(ref,{n:(s.data().n||0)+1});else tx.set(ref,{n:1})})}).then(function(){KW.at=0;loadKw()}).catch(function(){})});
+  }
   function boardView(){
     var h=chips([["전체","전체"]].concat(BCATS.map(function(c){return [c,c]})),S.bcat,"bcat");
     h+='<div class="group"><div class="card" style="padding:12px 16px"><p class="note" style="margin:0;font-size:14px">교통대 학생 누구나 쓰는 게시판이에요. 욕설·비방·개인정보·광고는 안 돼요. 신고가 5번 쌓이면 글이 가려지고, 운영자가 지울 수 있어요.</p></div></div>';
+    if(S.bcat==="전체")return h+boardSearchHtml();
     /* 꿀팁: 운영진 엑셀 + 팀원 조사 꿀팁을 미리 올려 둔다(서버 없어도 보임) */
-    var showTips=S.bcat==="꿀팁"||S.bcat==="전체";
-    var tipsPart=showTips?h2("미리 올려 둔 꿀팁 "+TIPS.length+"개")+tipList(TIPS.slice().sort(function(a,b){return (b.rec||0)-(a.rec||0)})):"";
+    var showTips=S.bcat==="꿀팁";
+    var tipsPart=showTips?h2("4학년이 쓴 꿀팁 "+TIPS.length+"가지")+tipList(TIPS.slice().sort(function(a,b){return (b.rec||0)-(a.rec||0)})):"";
     var srv="";
     if(!FB_CONFIG)srv=showTips?'<p class="hint" style="margin:10px 2px 0">글쓰기·댓글·따봉은 게시판 서버를 연결하면 열려요.</p>':'<p class="empty">게시판은 아직 준비 중이에요.<br>글을 저장할 서버를 연결하면 바로 쓸 수 있어요.</p>';
     else if(!PUBLIC_SITE)srv='<div class="group" style="margin-top:12px"><div class="card"><p class="note">글쓰기와 따봉은 공개 사이트에서 열려요.</p><div class="acts"><a class="btn pri" href="'+APPURL+'#board" target="_blank" rel="noopener">공개 사이트에서 게시판 열기</a></div></div></div>';
@@ -2090,7 +2219,59 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
 
   var HEADS={place:["꿀팁장소","밥집, 카페, 편의점, 학교 시설"],campus:["학교","건물 번호, 학과, 생활관"],transit:["학교","교통 · 학교 오가는 법"],acad:["학교","학사 · 신입생을 위한 1년 흐름"],tips:["꿀팁","학생들이 모은 교통대 생활 요령"],links:["학교","교통대 공식 사이트 바로가기"],board:["게시판","교통대 학생 자유게시판"],my:["MY","목표, 시간표, D-day, 즐겨찾기"]};
   var TABOF={home:"home",tips:"home",place:"place",campus:"campus",transit:"campus",acad:"campus",links:"campus",board:"board",my:"my"};
-  function greet(){var n=new Date(),hr=n.getHours(),nm=profile().name;return (n.getMonth()+1)+"월 "+n.getDate()+"일 "+DAYN[(n.getDay()+6)%7]+"요일 · "+(nm?esc(nm)+"님, ":"")+(hr<5?"늦게까지 고생 많아요":hr<11?"좋은 아침이에요":hr<17?"오늘도 힘내요":"오늘 하루 수고했어요")}
+  /* ===== 충주 교통대 날씨 (Open-Meteo, 키 없이 쓰는 공개 날씨 API). 30분마다 새로 받는다 ===== */
+  var WXT=(location.search.match(/[?&]wx=(\w+)/)||[])[1]||""; /* 시험용: 주소 끝에 ?wx=rain 처럼 */
+  var WX=(function(){var o=store("ut-wx");return o&&Date.now()-o.at<1800000?o:{c:null,at:0}})();
+  if(WXT)WX={c:WXT,t:WXT==="hot"?32:WXT==="cold"?-8:WXT==="snow"?-1:12,max:WXT==="hot"?33:15,min:WXT==="cold"?-10:5,pp:WXT==="rain"?90:10,uv:WXT==="hot"?9:3,wind:WXT==="windy"?42:8,at:Date.now()};
+  function wxCond(code,max,min,pp,wind,wmax){
+    var mo=new Date().getMonth()+1,winter=mo===12||mo<=2;
+    if([71,73,75,77,85,86].indexOf(code)>-1)return "snow";
+    if((code>=51&&code<=67)||(code>=80&&code<=82)||code>=95)return "rain";
+    if(max>=30)return "hot";
+    if(wind>=30||wmax>=40)return "windy"; /* km/h: 약 초속 8~11m 이상 */
+    if(min<=-5||(winter&&max<=5))return "cold"; /* 눈 없이 추운 겨울 */
+    if(code===45||code===48)return "fog";
+    if(code===2||code===3)return "cloudy";
+    return "clear";
+  }
+  function loadWeather(){
+    if(WXT||Date.now()-WX.at<1800000||!window.fetch)return;WX.at=Date.now();
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=36.9697&longitude=127.8722&current=temperature_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max,wind_speed_10m_max&timezone=Asia%2FSeoul&forecast_days=1")
+      .then(function(r){return r.json()}).then(function(d){
+        var c=d.current,dl=d.daily,max=Math.round(dl.temperature_2m_max[0]),min=Math.round(dl.temperature_2m_min[0]);
+        WX={code:c.weather_code,t:Math.round(c.temperature_2m),max:max,min:min,pp:dl.precipitation_probability_max[0]||0,uv:Math.round(dl.uv_index_max[0]||0),wind:Math.round(c.wind_speed_10m||0),wmax:Math.round((dl.wind_speed_10m_max||[0])[0]||0),at:Date.now()};
+        WX.c=wxCond(WX.code,max,min,WX.pp,WX.wind,WX.wmax);store("ut-wx",WX);if(S.tab==="home")render();
+      }).catch(function(){WX.at=Date.now()-1500000}); /* 실패하면 5분 뒤 다시 */
+  }
+  function wxMsg(){
+    var t=WX.t!=null?" "+WX.t+"°":"";
+    if(WX.c==="rain")return "비가 와요"+t+" · 우산 챙기세요";
+    if(WX.c==="snow")return "눈이 와요"+t+" · 길이 미끄러우니 조심하세요";
+    if(WX.c==="hot")return "더워요 (최고 "+WX.max+"°) · 썬크림 꼭 바르세요";
+    if(WX.c==="windy")return "바람이 많이 불어요"+t+" · 옷 단단히 여미세요";
+    if(WX.c==="cold")return "추운 겨울이에요 (최저 "+WX.min+"°) · 따뜻하게 입으세요";
+    if(WX.pp>=60)return "비 소식이 있어요 ("+WX.pp+"%) · 우산 챙기세요";
+    if(WX.c==="fog")return "안개가 짙어요"+t+" · 길 건널 때 조심하세요";
+    if(WX.uv>=8)return "햇볕이 강해요 (자외선 "+WX.uv+") · 썬크림 바르세요";
+    if(WX.c==="cloudy")return "흐려요"+t+" · 오늘도 힘내요";
+    return "맑아요"+t+" · 좋은 하루 보내요";
+  }
+  function greet(){
+    var n=new Date(),hr=n.getHours(),nm=profile().name,who=nm?esc(nm)+"님, ":"";
+    var msg=hr>=20?who+"오늘 하루 수고했어요":WX.c?wxMsg():who+(hr<5?"늦게까지 고생 많아요":hr<11?"좋은 아침이에요":"오늘도 힘내요");
+    return (n.getMonth()+1)+"월 "+n.getDate()+"일 "+DAYN[(n.getDay()+6)%7]+"요일 · "+msg;
+  }
+  /* 홈 그림 위에 날씨 효과 */
+  function wxLayer(){
+    var c=WX.c,h="",i;if(!c)return "";
+    if(c==="rain"){for(i=0;i<34;i++)h+='<i class="dr" style="left:'+((i*37)%100)+'%;animation-delay:'+((i*0.137)%1).toFixed(2)+'s;animation-duration:'+(0.6+(i%5)*0.08).toFixed(2)+'s"></i>'}
+    else if(c==="snow"){for(i=0;i<26;i++)h+='<i class="sf" style="left:'+((i*41)%100)+'%;animation-delay:'+((i*0.53)%5).toFixed(2)+'s;animation-duration:'+(4+(i%4)).toFixed(1)+'s;width:'+(3+i%3)+'px;height:'+(3+i%3)+'px"></i>'}
+    else if(c==="hot")h='<i class="hglow"></i><i class="hw" style="top:52%"></i><i class="hw" style="top:66%;animation-delay:.8s"></i><i class="hw" style="top:80%;animation-delay:1.6s"></i>';
+    else if(c==="windy"){for(i=0;i<12;i++)h+='<i class="wd" style="top:'+(8+(i*29)%80)+'%;animation-delay:'+((i*0.23)%1.6).toFixed(2)+'s;animation-duration:'+(0.9+(i%4)*0.2).toFixed(1)+'s;width:'+(30+(i%3)*18)+'px"></i>';for(i=0;i<5;i++)h+='<i class="lf" style="top:'+(30+i*11)+'%;animation-delay:'+(i*0.7).toFixed(1)+'s"></i>'}
+    else if(c==="cold"){h='<i class="frost"></i>';for(i=0;i<10;i++)h+='<i class="sp" style="left:'+((i*31)%95)+'%;top:'+(6+(i*17)%60)+'%;animation-delay:'+((i*0.4)%3).toFixed(1)+'s"></i>'}
+    else if(c==="cloudy"||c==="fog")h='<i class="cl" style="top:8%;left:-25%"></i><i class="cl" style="top:20%;left:25%;animation-delay:-14s;transform:scale(.85)"></i><i class="cl" style="top:4%;left:60%;animation-delay:-26s;transform:scale(.7)"></i>';
+    return '<div class="wx" aria-hidden="true">'+h+'</div>';
+  }
   var LCOL={home:"var(--l-home)",place:"var(--l-place)",campus:"var(--l-campus)",board:"var(--l-board)",my:"var(--l-my)"};
   /* 홈 배너: 산 아래 캠퍼스, 선로 위 기차, 도로 위 자동차 */
   function heroSvg(){
@@ -2099,7 +2280,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     var car=function(x,y,col){return '<rect x="'+x+'" y="'+y+'" width="44" height="22" rx="7" style="fill:'+col+'"/><rect x="'+(x+5)+'" y="'+(y+5)+'" width="34" height="7" rx="2" fill="#dbe7ff"/><rect x="'+x+'" y="'+(y+15)+'" width="44" height="3" fill="#ffc21a"/><circle cx="'+(x+10)+'" cy="'+(y+23)+'" r="2.5" fill="#2b2f36"/><circle cx="'+(x+34)+'" cy="'+(y+23)+'" r="2.5" fill="#2b2f36"/>'};
     var auto=function(col){return '<rect x="0" y="137" width="30" height="9" rx="3" fill="'+col+'"/><rect x="6" y="131" width="16" height="8" rx="3" fill="'+col+'"/><rect x="8.5" y="133" width="5" height="4" rx="1" fill="#dbe7ff"/><rect x="15" y="133" width="5" height="4" rx="1" fill="#dbe7ff"/><circle cx="7" cy="147" r="3" fill="#20242a"/><circle cx="23" cy="147" r="3" fill="#20242a"/><rect x="0" y="139" width="2" height="3" fill="#ffd36b"/>'};
     return '<svg viewBox="0 0 360 168" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><defs><linearGradient id="hsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--hero-sky)"/><stop offset="1" style="stop-color:var(--hero-sky2)"/></linearGradient></defs>'+
-      '<rect class="h-sky" width="360" height="168"/><circle cx="318" cy="34" r="13" fill="#ffc21a" opacity=".85"/>'+
+      '<rect class="h-sky" width="360" height="168"/><circle class="h-sun" cx="318" cy="34" r="13" fill="#ffc21a" opacity=".85"/><g class="h-night"><circle cx="316" cy="32" r="11" fill="#f6f1cf"/><circle cx="322" cy="28" r="10" class="h-moonc"/><circle cx="40" cy="20" r="1.1"/><circle cx="92" cy="12" r=".9"/><circle cx="128" cy="30" r="1.2"/><circle cx="176" cy="16" r=".8"/><circle cx="214" cy="26" r="1"/><circle cx="252" cy="10" r="1.2"/><circle cx="282" cy="40" r=".8"/><circle cx="20" cy="44" r=".8"/><circle cx="345" cy="58" r=".9"/><circle cx="66" cy="34" r=".7"/></g>'+
       '<path class="h-mt2" d="M120 100 L190 46 L240 82 L292 40 L360 88 L360 104 L120 104Z"/><path class="h-mt" d="M0 104 L60 70 L110 94 L170 64 L230 100 L300 74 L360 98 L360 110 L0 110Z"/>'+
       bd+w+'<rect class="h-gd" x="0" y="100" width="360" height="68"/>'+
       '<line class="h-rail" x1="0" y1="121" x2="360" y2="121" stroke-width="8" stroke-dasharray="2.5 7" opacity=".45"/><line class="h-rail" x1="0" y1="118" x2="360" y2="118" stroke-width="1.8"/><line class="h-rail" x1="0" y1="124" x2="360" y2="124" stroke-width="1.8"/>'+
@@ -2112,12 +2293,12 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   function signHtml(hh){
     var order=["home","place","campus","board","my"],cur=TABOF[S.tab]||"home",i=order.indexOf(cur),pv=order[(i+4)%5],nx=order[(i+1)%5];
     var nm=function(k){for(var j=0;j<TABS.length;j++)if(TABS[j][0]===k)return TABS[j][1];return ""};
-    return '<div class="sign"><button class="sg-side" data-go="'+pv+'" aria-label="'+nm(pv)+'으로">‹ '+nm(pv)+'</button><div class="sg-name">'+hh[0]+'</div><button class="sg-side r" data-go="'+nx+'" aria-label="'+nm(nx)+'으로">'+nm(nx)+' ›</button></div><p class="sg-sub"><b>'+(i+1)+'번 노선</b> · '+hh[1]+'</p>';
+    return '<div class="sign"><button class="sg-side" data-go="'+pv+'" aria-label="'+nm(pv)+'으로">‹ '+nm(pv)+'</button><div class="sg-name">'+hh[0]+'</div><button class="sg-side r" data-go="'+nx+'" aria-label="'+nm(nx)+'으로">'+nm(nx)+' ›</button></div><p class="sg-sub">'+hh[1]+'</p>';
   }
   function render(){
-    var sq=S.q.trim(),q="",hh=q?["검색",'"'+esc(q)+'"']:S.tab==="home"?['<span class="brand-tk">GUIDE</span>통통 가이드',greet()]:HEADS[S.tab];
+    var sq=S.q.trim(),q="",hh=q?["검색",'"'+esc(q)+'"']:S.tab==="home"?['통통 가이드',greet()]:HEADS[S.tab];
     if(!q)document.documentElement.setAttribute("data-ln",TABOF[S.tab]||"home");
-    hd.innerHTML=q?'<div class="head"><h1>'+hh[0]+'</h1><p>'+hh[1]+'</p></div>':S.tab==="home"?'<div class="hero">'+heroSvg()+'<div class="ht"><h1>'+hh[0]+'</h1><p>'+hh[1]+'</p></div>'+mascot("happy","hm")+'<span class="bubble">검색은 나에게</span></div>':signHtml(hh);
+    hd.innerHTML=q?'<div class="head"><h1>'+hh[0]+'</h1><p>'+hh[1]+'</p></div>':S.tab==="home"?'<div class="hero'+(isNight()?' night':' day')+(WX.c?' wx-'+WX.c:'')+'">'+heroSvg()+wxLayer()+'<div class="ht"><h1>'+hh[0]+'</h1><p>'+hh[1]+'</p></div>'+mascot("happy","hm")+'<span class="bubble">검색은 나에게 물어보세요!</span></div>':signHtml(hh);
     view.innerHTML=q?searchView():({home:homeView,place:placeView,campus:campusView,transit:transitView,acad:acadView,tips:tipsView,links:linksView,board:boardView,my:myView})[S.tab]();
     var qres=document.getElementById("qres");if(qres)qres.innerHTML=sq?searchView():'<p class="qhint">건물 번호(W5), 학과(전자공학), 가게 이름, 꿀팁을 찾아보세요.</p>';
     var vk=q?"search":S.tab+"/"+(S.sub||"")+(S.my||"");
@@ -2215,6 +2396,8 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
 
   /* ===== 이벤트 ===== */
   qEl.addEventListener("input",function(e){S.q=e.target.value;render()});
+  /* 게시판 검색: 입력하는 대로 결과만 바꾼다(검색창이 다시 그려지지 않게) */
+  root.addEventListener("input",function(e){if(e.target.id!=="bq")return;S.bq=e.target.value;var br=document.getElementById("bres");if(br)br.innerHTML=boardResultsHtml(S.bq)});
   /* 검색창은 숨겨 두고, 통통이(홈 위·아래 탭)를 누르면 연다. 비운 채로 벗어나면 다시 숨긴다 */
   var qwrap=document.getElementById("qwrap");
   function openSearch(){qwrap.classList.add("open");document.documentElement.classList.add("qlock");render();setTimeout(function(){qEl.focus()},30)}
@@ -2225,7 +2408,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   bar.addEventListener("click",function(e){if(e.target.closest(".bar-m")){e.stopPropagation();openSearch()}},true);
   bar.addEventListener("click",function(e){var b=e.target.closest(".tabbtn");if(b)go(b.dataset.tab)});
   root.addEventListener("click",function(e){
-    var t=e.target.closest("[data-go],[data-cat],[data-zone],[data-kind],[data-sub],[data-bz],[data-asub],[data-tcat],[data-b],[data-close],[data-add],[data-del],[data-pin],[data-mz],[data-fav],[data-pick],[data-mapsel],[data-share],[data-theme],[data-ttdel],[data-dddel],[data-mysub],[data-tadd],[data-tdd],[data-tdel],[data-tclear],[data-tq],[data-hedit],[data-mjump],[data-bmap],[data-snav],[data-cal],[data-calnav],[data-prof],[data-gstep],[data-gdone],[data-gundo],[data-gdel],[data-bcat],[data-write],[data-post],[data-like],[data-report],[data-pdel],[data-cdel],[data-back],[data-place],[data-tip],[data-info],[data-grp],[data-pdet],[data-cc],[data-mhelp],[data-tlike],[data-calwk],[data-calopen],.copy-btn");
+    var t=e.target.closest("[data-go],[data-cat],[data-zone],[data-kind],[data-sub],[data-bz],[data-asub],[data-tcat],[data-b],[data-close],[data-add],[data-del],[data-pin],[data-mz],[data-fav],[data-pick],[data-mapsel],[data-share],[data-theme],[data-ttdel],[data-dddel],[data-mysub],[data-tadd],[data-tdd],[data-tdel],[data-tclear],[data-tq],[data-hedit],[data-mjump],[data-bmap],[data-snav],[data-cal],[data-calnav],[data-prof],[data-gstep],[data-gdone],[data-gundo],[data-gdel],[data-bcat],[data-write],[data-post],[data-like],[data-report],[data-pdel],[data-cdel],[data-back],[data-place],[data-tip],[data-info],[data-grp],[data-pdet],[data-cc],[data-mhelp],[data-tlike],[data-calwk],[data-calopen],[data-calview],[data-kw],.copy-btn");
     if(!t)return;
     var ds=t.dataset||{};
     if(MAPDRAGGED&&t.closest("#msvg"))return;
@@ -2233,6 +2416,21 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     if(ds.calnav){var cmo=S.calM+(+ds.calnav),cyr=S.calY;if(cmo<0){cmo=11;cyr--}if(cmo>11){cmo=0;cyr++}S.calM=cmo;S.calY=cyr;render();return}
     if(ds.cal){S.calD=ds.cal;render();return}
     if(ds.calwk){var cs=(S.calD||today()).split("-"),cd=new Date(+cs[0],+cs[1]-1,+cs[2]+(+ds.calwk));S.calD=ymd(cd.getFullYear(),cd.getMonth(),cd.getDate());S.calY=cd.getFullYear();S.calM=cd.getMonth();render();return}
+    if(ds.calview){
+      var MD=["day","week","month"],pvm=MD.indexOf(store("ut-calview")||"week"),nvm=MD.indexOf(ds.calview);if(pvm===nvm)return;
+      store("ut-calview",ds.calview);if(ds.calview==="month"&&S.calD){var cv=S.calD.split("-");S.calY=+cv[0];S.calM=+cv[1]-1}
+      var ocal=t.closest(".cal"),sg=ocal&&ocal.querySelector(".seg3");if(!ocal||!sg){render();return}
+      sg.style.setProperty("--i",nvm);[].forEach.call(sg.querySelectorAll("button"),function(x){x.setAttribute("aria-pressed",x.getAttribute("data-calview")===ds.calview?"true":"false")});
+      var tmp=document.createElement("div");tmp.innerHTML=calHtml(true);
+      var ncal=tmp.querySelector(".cal"),nb=ncal.querySelector(".calbody"),ob=ocal.querySelector(".calbody"),np=tmp.querySelector(".daypanel"),op=document.querySelector("#view .daypanel");
+      var h0=ob.offsetHeight,reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+      ocal.className=ncal.className;ob.innerHTML=nb.innerHTML;if(np&&op)op.innerHTML=np.innerHTML;
+      if(reduce)return;
+      var h1=ob.offsetHeight;ob.style.height=h0+"px";ob.style.overflow="hidden";ob.classList.remove("cin-l","cin-r");void ob.offsetWidth;
+      ob.classList.add(nvm>pvm?"cin-r":"cin-l");ob.style.transition="height .34s cubic-bezier(.2,.8,.2,1)";ob.style.height=h1+"px";
+      setTimeout(function(){ob.style.height="";ob.style.overflow="";ob.style.transition="";ob.classList.remove("cin-l","cin-r")},380);
+      return;
+    }
     if(ds.calopen!=null){S.calOpen=ds.calopen==="1";if(S.calOpen&&S.calD){var co=S.calD.split("-");S.calY=+co[0];S.calM=+co[1]-1}render();return}
     if(ds.prof){profSheet();return}
     if(ds.gstep||ds.gdone||ds.gundo){
@@ -2247,6 +2445,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     }
     if(ds.gdel){if(t.textContent!=="정말 삭제"){t.textContent="정말 삭제";return}store("ut-goals",goals().filter(function(x){return x.id!==ds.gdel}));render();return}
     if(ds.bcat){S.bcat=ds.bcat;render();return}
+    if(ds.kw!=null){S.bq=ds.kw;var bqi=document.getElementById("bq");if(bqi)bqi.value=ds.kw;var bre=document.getElementById("bres");if(bre)bre.innerHTML=boardResultsHtml(ds.kw);countKw(ds.kw);return}
     if(ds.write){if(FB.ready)writeSheet();return}
     if(ds.post){if(!FB.ready)return;if(FB.posts.some(function(x){return x.id===ds.post}))postSheet(ds.post);else{go("board","꿀팁");boardSub()}return}
     if(ds.tlike){ /* 꿀팁 따봉 (사람마다 한 번, 다시 누르면 취소) */
@@ -2360,6 +2559,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     store("ut-check",done);render();
   });
   root.addEventListener("submit",function(e){
+    if(e.target.id==="bqform"){e.preventDefault();var bqv=document.getElementById("bq").value;S.bq=bqv;countKw(bqv);var brr=document.getElementById("bres");if(brr)brr.innerHTML=boardResultsHtml(bqv);document.getElementById("bq").blur();return}
     var g=function(id){return document.getElementById(id).value.trim()};
     if(e.target.id==="tododay"){e.preventDefault();var dtx=g("tc-text"),ddt=g("tc-date");if(!dtx){toast("할 일을 적어 주세요.");return}addTodo(dtx,ddt,"");render();var tci=document.getElementById("tc-text");if(tci)tci.focus();return}
     if(e.target.id==="profform"){e.preventDefault();var pfn=g("pf-name");store("ut-profile",{name:pfn});closeSheet();toast(pfn?pfn+"님으로 저장했어요.":"이름을 지웠어요.");render();return}
@@ -2427,6 +2627,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   document.addEventListener("keydown",function(e){if(e.key!=="Escape")return;if(!sheet.hidden)closeSheet();else if(!page.hidden)closePage()});
   window.addEventListener("hashchange",routeHash);
 
+  loadWeather();setInterval(loadWeather,1800000);
   render();
   routeHash();
 

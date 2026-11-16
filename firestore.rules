@@ -64,7 +64,7 @@ service cloud.firestore {
       allow read: if true;
       allow create: if signedIn() && cooled('lastPostAt', 30) && stamped('lastPostAt')
         && request.resource.data.keys().hasOnly(['cat', 'title', 'body', 'nick', 'badges', 'uid', 'createdAt', 'likeCount', 'commentCount', 'reportCount'])
-        && request.resource.data.cat in ['꿀팁', '자유', '질문', '정보', '분실물']
+        && request.resource.data.cat in ['꿀팁', '질문', '정보']
         && okText(request.resource.data.title, 60)
         && okText(request.resource.data.body, 2000)
         && okAuthor(request.resource.data)
@@ -141,6 +141,18 @@ service cloud.firestore {
         allow delete: if signedIn() && me() == uid
           && exists(st()) && getAfter(st()).data.likes == get(st()).data.likes - 1;
       }
+    }
+
+    // 오늘 많이 찾는 키워드: kw/{한국 날짜 번호}/k/{키워드} 문서마다 {n: 횟수}
+    // - 오늘 날짜 아래에만 쓸 수 있음 (다음 날은 새 날짜라 순위가 처음부터 시작)
+    // - 한 번에 1씩만 올릴 수 있음, 키워드는 20자까지
+    match /kw/{d}/k/{w} {
+      function kwToday() { return math.floor((request.time.toMillis() + 32400000) / 86400000); }
+      allow read: if true;
+      allow create: if signedIn() && int(d) == kwToday() && w.size() <= 20
+        && request.resource.data.keys().hasOnly(['n']) && request.resource.data.n == 1;
+      allow update: if signedIn() && int(d) == kwToday()
+        && request.resource.data.keys().hasOnly(['n']) && request.resource.data.n == resource.data.n + 1;
     }
 
     match /admins/{uid} {
