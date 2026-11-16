@@ -1,5 +1,5 @@
 rules_version = '2';
-// 교통대 패스 게시판 보안 규칙
+// 통통 가이드 게시판 보안 규칙
 // - 누구나 읽기, 익명 로그인한 사람만 쓰기
 // - 글은 30초, 댓글은 10초에 한 번 (도배 방지)
 // - 내 글·댓글만 지우기, 운영자(admins 컬렉션)는 모두 지우기
@@ -64,7 +64,7 @@ service cloud.firestore {
       allow read: if true;
       allow create: if signedIn() && cooled('lastPostAt', 30) && stamped('lastPostAt')
         && request.resource.data.keys().hasOnly(['cat', 'title', 'body', 'nick', 'badges', 'uid', 'createdAt', 'likeCount', 'commentCount', 'reportCount'])
-        && request.resource.data.cat in ['자유', '질문', '정보', '분실물']
+        && request.resource.data.cat in ['꿀팁', '자유', '질문', '정보', '분실물']
         && okText(request.resource.data.title, 60)
         && okText(request.resource.data.body, 2000)
         && okAuthor(request.resource.data)
@@ -92,6 +92,54 @@ service cloud.firestore {
       match /reports/{uid} {
         allow read: if isAdmin();
         allow create: if signedIn() && me() == uid && request.resource.data.keys().size() == 0;
+      }
+    }
+
+    // 꿀팁 따봉·조회수 (오늘의 HOT 이슈)
+    // stats/{t_꿀팁id 또는 p_글id}: title, likes, views, day(한국 날짜 번호), dl(오늘 따봉), dv(오늘 조회)
+    // - 조회는 한 번에 1씩만, 따봉은 사람마다 한 번(likes/{uid}와 함께 바뀌어야 함)
+    // - day는 서버 시간으로 계산한 오늘이어야 함 (날짜를 속여 오늘 숫자를 지우지 못하게)
+    match /stats/{k} {
+      function todayNum() { return math.floor((request.time.toMillis() + 32400000) / 86400000); }
+      function likeP() { return /databases/$(database)/documents/stats/$(k)/likes/$(me()); }
+      function n() { return request.resource.data; }
+      function o() { return resource.data; }
+      function sameDay() { return n().day == o().day; }
+      function viewUp() {
+        return n().views == o().views + 1 && n().likes == o().likes
+          && ((sameDay() && n().dv == o().dv + 1 && n().dl == o().dl) || (!sameDay() && n().dv == 1 && n().dl == 0));
+      }
+      function likeUp() {
+        return n().likes == o().likes + 1 && n().views == o().views
+          && !exists(likeP()) && existsAfter(likeP())
+          && ((sameDay() && n().dl == o().dl + 1 && n().dv == o().dv) || (!sameDay() && n().dl == 1 && n().dv == 0));
+      }
+      function likeDown() {
+        return n().likes == o().likes - 1 && n().views == o().views
+          && exists(likeP()) && !existsAfter(likeP())
+          && ((sameDay() && n().dv == o().dv && (n().dl == o().dl - 1 || (o().dl == 0 && n().dl == 0)))
+              || (!sameDay() && n().dl == 0 && n().dv == 0));
+      }
+      allow read: if true;
+      allow create: if signedIn() && k.matches('^[tp]_[A-Za-z0-9_-]{1,40}$')
+        && n().keys().hasOnly(['title', 'likes', 'views', 'day', 'dl', 'dv'])
+        && n().title is string && n().title.size() <= 80
+        && n().day == todayNum()
+        && ((n().views == 1 && n().dv == 1 && n().likes == 0 && n().dl == 0)
+            || (n().likes == 1 && n().dl == 1 && n().views == 0 && n().dv == 0 && existsAfter(likeP())));
+      allow update: if signedIn()
+        && n().diff(o()).affectedKeys().hasOnly(['likes', 'views', 'day', 'dl', 'dv'])
+        && n().day == todayNum()
+        && (viewUp() || likeUp() || likeDown());
+      match /likes/{uid} {
+        function st() { return /databases/$(database)/documents/stats/$(k); }
+        allow read: if signedIn() && me() == uid;
+        // 따봉 표시는 stats 숫자가 같이 1 오를 때만, 취소는 같이 1 내릴 때만
+        allow create: if signedIn() && me() == uid && request.resource.data.keys().size() == 0
+          && ((!exists(st()) && getAfter(st()).data.likes == 1)
+              || (exists(st()) && getAfter(st()).data.likes == get(st()).data.likes + 1));
+        allow delete: if signedIn() && me() == uid
+          && exists(st()) && getAfter(st()).data.likes == get(st()).data.likes - 1;
       }
     }
 
