@@ -2279,7 +2279,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
       return Promise.all(ps)
     }).then(function(){return u.delete()}).then(function(){
       SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=null;SOC.req=[];SOC.fr=[];SOC.dm=[];SOC.sent=[];if(PSYNC.unsub){PSYNC.unsub();PSYNC.unsub=null;PSYNC.uid=null}
-      ["ut-profile","ut-myb"].forEach(function(k){try{localStorage.removeItem(k)}catch(e){}});MYB={ids:[],selA:"",selT:""};
+      ["ut-profile","ut-myb","ut-bc","ut-bc-"+me,"ut-dmseen2-"+me,"ut-dmseen-"+me].forEach(function(k){try{localStorage.removeItem(k)}catch(e){}});MYB={ids:[],selA:"",selT:""};
       try{navigator.clearAppBadge&&navigator.clearAppBadge().catch(function(){})}catch(e){}
       return A.signInAnonymously().then(function(c){FB.uid=c.user.uid;FB.email=null;FB.admin=false})
     }).then(function(){closeSheet();toast("계정을 삭제했어요. 그동안 고마웠어요.");render()},function(e){btn.disabled=false;btn.textContent="계정 삭제";
@@ -2291,7 +2291,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   function timeBadges(){var n=new Date(),hh=n.getHours(),mm=n.getMinutes();if(hh>=2&&hh<5)bcSet("owl",1);if(hh===0&&mm<5)bcSet("cinder",1)}
   setTimeout(timeBadges,3000);
   function visitCount(){if(!BOARD_LIVE)return;var d=dayNum();fbLoad(function(){var ref=FB.db.collection("visits").doc(String(d));
-    var go=store("ut-visit")!==d?FB.db.runTransaction(function(tx){return tx.get(ref).then(function(s){if(s.exists)tx.update(ref,{n:(s.data().n||0)+1});else{tx.set(ref,{n:1});FIRSTV=1}})}).then(function(){store("ut-visit",d);var o=bc();if(o.vlast!==d){o.vlast=d;o.vd=(o.vd||0)+1}if(FIRSTV){o.fv=(o.fv||0)+1;FIRSTV=0}store("ut-bc",o);badgeCheckSoon()}):Promise.resolve();
+    var go=store("ut-visit")!==d?FB.db.runTransaction(function(tx){return tx.get(ref).then(function(s){if(s.exists)tx.update(ref,{n:(s.data().n||0)+1});else{tx.set(ref,{n:1});FIRSTV=1}})}).then(function(){store("ut-visit",d);var o=bc();if(o.vlast!==d){o.vlast=d;o.vd=(o.vd||0)+1}if(FIRSTV){o.fv=(o.fv||0)+1;FIRSTV=0}store(bcKey(),o);badgeCheckSoon()}):Promise.resolve();
     go.catch(function(){}).then(function(){return ref.get()}).then(function(s){FB.visits=s.exists?s.data().n:0;if(S.tab==="home"&&!S.q.trim())render()},function(){})})}
   setTimeout(visitCount,2000);
   /* 학번 로그인: 학번@knut-pass.app 형식의 이메일 계정 (Firebase 이메일/비밀번호) */
@@ -2443,9 +2443,14 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   ];
   var BMAPB={},RNAME={c:"일반",r:"희귀",e:"영웅",l:"전설"},RORD={l:0,e:1,r:2,c:3};BADGES.forEach(function(b){BMAPB[b.id]=b});
   var MYB=store("ut-myb")||{ids:[],selA:"",selT:""};
-  function bc(){return store("ut-bc")||{}}
-  function bcSet(k,v){var o=bc();if(typeof v==="number"&&o[k]===v)return;o[k]=v;store("ut-bc",o);badgeCheckSoon()}
-  function bcInc(k){var o=bc();o[k]=(o[k]||0)+1;store("ut-bc",o);badgeCheckSoon()}
+  function bcKey(){return FB.email?"ut-bc-"+FB.uid:"ut-bc"}
+  function bc(){return store(bcKey())||{}}
+  /* 로그인 전(이 기기)에 쌓인 기록을 지금 계정으로 한 번만 옮기고 지운다 */
+  function bcAdopt(){if(!FB.email)return;var an=store("ut-bc");if(!an)return;var o=bc();
+    Object.keys(an).forEach(function(k){var a=an[k],b=o[k];if(Array.isArray(a))o[k]=(b||[]).concat(a.filter(function(x){return (b||[]).indexOf(x)<0}));else if(typeof a==="number")o[k]=k==="vlast"||k==="vd"?Math.max(a,b||0):(b||0)+a;else if(a)o[k]=a});
+    store(bcKey(),o);try{localStorage.removeItem("ut-bc")}catch(e){}}
+  function bcSet(k,v){var o=bc();if(typeof v==="number"&&o[k]===v)return;o[k]=v;store(bcKey(),o);badgeCheckSoon()}
+  function bcInc(k){var o=bc();o[k]=(o[k]||0)+1;store(bcKey(),o);badgeCheckSoon()}
   function bavHtml(id,cls){var b=BMAPB[id];if(!b)return "";return '<span class="bav r-'+b.r+' '+(cls||"")+'"><span>'+b.e+'</span></span>'}
   function titleHtml(id){var b=BMAPB[id];return b?' <span class="btitle r-'+b.r+'">'+esc(b.t)+'</span>':""}
   function tagOf(list,k){var v="";(list||[]).forEach(function(x){if(typeof x==="string"&&x.indexOf(k+":")===0)v=x.slice(2)});return BMAPB[v]?v:""}
@@ -2453,7 +2458,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   var BCK={t:null,at:0,busy:false};
   function badgeCheckSoon(){if(BCK.t)return;BCK.t=setTimeout(function(){BCK.t=null;badgeCheck(true)},1500)}
   /* 내 기록을 모아 업적 계산 → 새로 딴 업적이 있으면 축하 + 서버(ubadges)에 저장 */
-  function badgeCheck(force){if(!BOARD_LIVE||!FB.ready||!FB.email||BCK.busy)return;if(!force&&Date.now()-BCK.at<60000)return;BCK.busy=true;BCK.at=Date.now();
+  function badgeCheck(force){if(!BOARD_LIVE||!FB.ready||!FB.email||BCK.busy)return;bcAdopt();if(!force&&Date.now()-BCK.at<60000)return;BCK.busy=true;BCK.at=Date.now();
     var db=FB.db,u=FB.uid,q=function(p){return p.catch(function(){return {docs:[],exists:false,data:function(){return {}}}})};
     Promise.all([q(db.collection("posts").where("uid","==",u).get()),q(db.collection("places").where("uid","==",u).get()),q(db.collection("placephotos").where("uid","==",u).get()),
       q(db.collection("achievements").where("uid","==",u).get()),q(db.collection("edits").where("uid","==",u).get()),q(db.collection("friends").doc(u).collection("f").get()),
@@ -3371,7 +3376,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     ,{when:function(){return !standalone()},go:["home"],el:null,t:"폰·PC 화면에 바로가기 넣기",d:"",dyn:instHtml,last:1}
   ];
   var TSTEPS=TSTEPS1;
-  function tourStart(){closeSheet();TSTEPS=TSTEPS0.concat(TSTEPS1).filter(function(s){return !s.when||s.when()});if(BOARD_LIVE)fbLoad(function(){});TOUR={i:0,tt:(store("ut-tt")||[]).length,td:todos().length};
+  function tourStart(){closeSheet();TSTEPS=TSTEPS0.concat(TSTEPS1).filter(function(s){return !s.when||s.when()});if(BOARD_LIVE)fbLoad(function(){});TOUR={i:0,tt:(store("ut-tt")||[]).length,td:todos().length,never:!!store("ut-tour-never")};
     if(!document.getElementById("tour")){var b=document.createElement("div");b.id="tour";b.innerHTML='<div class="tr-spot"></div><div class="tr-arrow">'+ico("down")+'</div><div class="tr-bub" role="dialog" aria-live="polite"></div>';document.body.appendChild(b);
       b.addEventListener("click",function(e){var t=e.target.closest("[data-tourx],[data-tourn],[data-tourinst]");if(!t)return;if(t.hasAttribute("data-tourinst")){if(INSTP){INSTP.prompt();INSTP.userChoice.then(function(){INSTP=null;tourEnd(true)})}return}if(t.hasAttribute("data-tourx"))tourEnd();else tourNext()});TOUR.box=1;b.addEventListener("change",function(e){if(e.target.id==="tr-never"&&TOUR)TOUR.never=e.target.checked})}
     tourShow()}
@@ -3395,7 +3400,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     else{var bt2=Math.max(r.top-pad-44-bh,12);bu.style.top=bt2+"px";ar.className="tr-arrow";ar.style.top=(r.top-pad-38)+"px"}
     ar.style.left=(cx-16)+"px"}
   function tourNext(){if(!TOUR)return;TOUR.i++;if(TOUR.i>=TSTEPS.length)return tourEnd(true);tourShow()}
-  function tourEnd(fin){if(fin)bcSet("tour",1);if(TOUR){clearInterval(TOUR.timer);if(TOUR.never)store("ut-tour-never",1)}TOUR=null;store("ut-tour",1);var b=document.getElementById("tour");if(b)b.hidden=true;go("home");window.scrollTo(0,0);if(fin)toast("준비 끝! 궁금한 건 위 검색창에 물어보세요.")}
+  function tourEnd(fin){if(fin)bcSet("tour",1);if(TOUR){clearInterval(TOUR.timer);if(TOUR.never)store("ut-tour-never",1);else{try{localStorage.removeItem("ut-tour-never")}catch(e){}}}TOUR=null;store("ut-tour",1);var b=document.getElementById("tour");if(b)b.hidden=true;go("home");window.scrollTo(0,0);if(fin)toast("준비 끝! 궁금한 건 위 검색창에 물어보세요.")}
   window.addEventListener("resize",function(){if(TOUR)tourTick()});
   if(!store("ut-tour-never")&&!location.hash.replace("#",""))setTimeout(tourStart,700); /* 다시는 보지 않기를 체크하기 전까지는 열 때마다 */
 
