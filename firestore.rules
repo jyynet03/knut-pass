@@ -7,6 +7,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
+    // 학번으로 로그인한 사람 (익명 아님)
+    function member() { return signedIn() && ('email' in request.auth.token) && request.auth.token.email.matches('^[0-9]{7,10}@knut-pass[.]app$'); }
     function me() { return request.auth.uid; }
     function isAdmin() { return signedIn() && exists(/databases/$(database)/documents/admins/$(me())); }
     function userDoc() { return /databases/$(database)/documents/users/$(me()); }
@@ -62,7 +64,7 @@ service cloud.firestore {
       }
 
       allow read: if true;
-      allow create: if signedIn() && cooled('lastPostAt', 30) && stamped('lastPostAt')
+      allow create: if member() && cooled('lastPostAt', 30) && stamped('lastPostAt')
         && request.resource.data.keys().hasOnly(['cat', 'title', 'body', 'nick', 'badges', 'uid', 'createdAt', 'likeCount', 'commentCount', 'reportCount', 'photo'])
         && (!('photo' in request.resource.data) || (request.resource.data.photo is string && request.resource.data.photo.size() <= 300000 && request.resource.data.photo.matches('^data:image/jpeg;base64,.*')))
         && request.resource.data.cat in ['꿀팁', '질문', '정보']
@@ -205,7 +207,7 @@ service cloud.firestore {
     match /places/{pid} {
       function prp() { return /databases/$(database)/documents/places/$(pid)/reports/$(me()); }
       allow read: if true;
-      allow create: if signedIn() && cooled('lastPostAt', 30) && stamped('lastPostAt')
+      allow create: if member() && cooled('lastPostAt', 30) && stamped('lastPostAt')
         && request.resource.data.keys().hasOnly(['uid', 'nick', 'n', 'c', 'z', 'a', 'l', 'hrs', 'pos', 'm', 'p', 't', 'createdAt', 'reportCount'])
         && request.resource.data.uid == me()
         && request.resource.data.nick is string && request.resource.data.nick.size() >= 2 && request.resource.data.nick.size() <= 12
