@@ -155,6 +155,83 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['n']) && request.resource.data.n == resource.data.n + 1;
     }
 
+    // 닉네임 예약: nicks/{소문자 닉네임} = {uid}. 이미 있으면 다른 사람은 못 씀(중복 금지)
+    match /nicks/{k} {
+      allow read: if true;
+      allow create: if signedIn() && k.size() >= 2 && k.size() <= 12
+        && request.resource.data.keys().hasOnly(['uid']) && request.resource.data.uid == me();
+      allow delete: if signedIn() && resource.data.uid == me();
+    }
+
+    // 프로필: 닉네임과 작은 사진(폰에서 줄인 데이터)만. 닉네임은 내가 예약한 것이어야 함
+    match /profiles/{uid} {
+      allow read: if true;
+      allow create, update: if signedIn() && me() == uid
+        && request.resource.data.keys().hasOnly(['nick', 'photo', 'updatedAt'])
+        && request.resource.data.nick is string && request.resource.data.nick.size() >= 2 && request.resource.data.nick.size() <= 12
+        && getAfter(/databases/$(database)/documents/nicks/$(request.resource.data.nick.lower())).data.uid == me()
+        && request.resource.data.photo is string && request.resource.data.photo.size() <= 120000
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if signedIn() && me() == uid;
+    }
+
+    // 목표 달성 업적: 인증 사진·달성 날짜 필수, 본인만 올리고 지움, 신고 한 사람당 한 번
+    match /achievements/{aid} {
+      function arp() { return /databases/$(database)/documents/achievements/$(aid)/reports/$(me()); }
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid', 'nick', 'title', 'target', 'unit', 'doneAt', 'photo', 'createdAt', 'reportCount'])
+        && request.resource.data.uid == me()
+        && okText(request.resource.data.title, 40)
+        && request.resource.data.nick is string && request.resource.data.nick.size() <= 12
+        && (request.resource.data.target == null || request.resource.data.target is int)
+        && request.resource.data.unit is string && request.resource.data.unit.size() <= 6
+        && request.resource.data.doneAt is string && request.resource.data.doneAt.matches('^20[0-9][0-9]-[01][0-9]-[0-3][0-9]$')
+        && request.resource.data.photo is string && request.resource.data.photo.size() > 1000 && request.resource.data.photo.size() <= 300000
+        && request.resource.data.createdAt == request.time && request.resource.data.reportCount == 0;
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reportCount'])
+        && request.resource.data.reportCount == resource.data.reportCount + 1
+        && !exists(arp()) && existsAfter(arp());
+      allow delete: if signedIn() && (resource.data.uid == me() || isAdmin());
+      match /reports/{u} {
+        allow read: if isAdmin();
+        allow create: if signedIn() && me() == u && request.resource.data.keys().size() == 0;
+      }
+    }
+
+    // 학생이 등록하는 꿀팁장소: 필수 정보 확인, 네이버 지도 링크만, 글과 같은 30초 간격
+    match /places/{pid} {
+      function prp() { return /databases/$(database)/documents/places/$(pid)/reports/$(me()); }
+      allow read: if true;
+      allow create: if signedIn() && cooled('lastPostAt', 30) && stamped('lastPostAt')
+        && request.resource.data.keys().hasOnly(['uid', 'nick', 'n', 'c', 'z', 'a', 'l', 'hrs', 'pos', 'm', 'p', 't', 'createdAt', 'reportCount'])
+        && request.resource.data.uid == me()
+        && request.resource.data.nick is string && request.resource.data.nick.size() >= 2 && request.resource.data.nick.size() <= 12
+        && okText(request.resource.data.n, 30)
+        && request.resource.data.c in ['eat', 'cafe', 'conv', 'pub', 'print', 'laundry', 'pc', 'karaoke', 'gym', 'mart', 'etc', 'spot']
+        && request.resource.data.z in ['대학가', '캠퍼스', '시내']
+        && okText(request.resource.data.a, 80)
+        && request.resource.data.l is string && request.resource.data.l.size() <= 300
+        && request.resource.data.l.matches('^https://(naver[.]me|map[.]naver[.]com|m[.]place[.]naver[.]com|m[.]map[.]naver[.]com)/.*')
+        && request.resource.data.hrs is string && request.resource.data.hrs.size() <= 160
+        && request.resource.data.pos is list && request.resource.data.pos.size() == 2
+        && request.resource.data.pos[0] is number && request.resource.data.pos[1] is number
+        && request.resource.data.m is string && request.resource.data.m.size() <= 30
+        && request.resource.data.p is string && request.resource.data.p.size() <= 20
+        && okText(request.resource.data.t, 120)
+        && request.resource.data.createdAt == request.time && request.resource.data.reportCount == 0;
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reportCount'])
+        && request.resource.data.reportCount == resource.data.reportCount + 1
+        && !exists(prp()) && existsAfter(prp());
+      allow delete: if signedIn() && (resource.data.uid == me() || isAdmin());
+      match /reports/{u} {
+        allow read: if isAdmin();
+        allow create: if signedIn() && me() == u && request.resource.data.keys().size() == 0;
+      }
+    }
+
     match /admins/{uid} {
       allow read: if signedIn() && me() == uid;
     }
