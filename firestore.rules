@@ -63,7 +63,8 @@ service cloud.firestore {
 
       allow read: if true;
       allow create: if signedIn() && cooled('lastPostAt', 30) && stamped('lastPostAt')
-        && request.resource.data.keys().hasOnly(['cat', 'title', 'body', 'nick', 'badges', 'uid', 'createdAt', 'likeCount', 'commentCount', 'reportCount'])
+        && request.resource.data.keys().hasOnly(['cat', 'title', 'body', 'nick', 'badges', 'uid', 'createdAt', 'likeCount', 'commentCount', 'reportCount', 'photo'])
+        && (!('photo' in request.resource.data) || (request.resource.data.photo is string && request.resource.data.photo.size() <= 300000 && request.resource.data.photo.matches('^data:image/jpeg;base64,.*')))
         && request.resource.data.cat in ['꿀팁', '질문', '정보']
         && okText(request.resource.data.title, 60)
         && okText(request.resource.data.body, 2000)
@@ -230,6 +231,50 @@ service cloud.firestore {
         allow read: if isAdmin();
         allow create: if signedIn() && me() == u && request.resource.data.keys().size() == 0;
       }
+    }
+
+    // 꿀팁 댓글: tipcomments/{꿀팁id}/c/{댓글}. 게시판 댓글과 같은 10초 간격
+    match /tipcomments/{tid}/c/{cid} {
+      allow read: if true;
+      allow create: if signedIn() && tid.matches('^[A-Za-z0-9_-]{1,40}$')
+        && cooled('lastCommentAt', 10) && stamped('lastCommentAt')
+        && request.resource.data.keys().hasOnly(['body', 'nick', 'uid', 'createdAt'])
+        && okText(request.resource.data.body, 500)
+        && request.resource.data.nick is string && request.resource.data.nick.size() > 0 && request.resource.data.nick.size() <= 20
+        && request.resource.data.uid == me() && request.resource.data.createdAt == request.time;
+      allow delete: if signedIn() && (resource.data.uid == me() || isAdmin());
+    }
+
+    // 장소 정보 고치기(위키): edits/{장소} = 지금 내용, edits/{장소}/h = 수정 기록. 닉네임 필수, 30초 간격
+    function okEdit(d) {
+      return d.keys().hasOnly(['n', 'note', 'menu', 'price', 'hrs', 'uid', 'nick', 'at'])
+        && okText(d.n, 40)
+        && d.note is string && d.note.size() <= 120
+        && d.menu is string && d.menu.size() <= 40
+        && d.price is string && d.price.size() <= 30
+        && d.hrs is string && d.hrs.size() <= 160
+        && d.uid == me() && d.nick is string && d.nick.size() >= 2 && d.nick.size() <= 12
+        && d.at == request.time;
+    }
+    match /edits/{k} {
+      allow read: if true;
+      allow create, update: if signedIn() && cooled('lastPostAt', 30) && stamped('lastPostAt') && okEdit(request.resource.data);
+      allow delete: if isAdmin();
+      match /h/{hid} {
+        allow read: if true;
+        allow create: if signedIn() && stamped('lastPostAt') && okEdit(request.resource.data);
+        allow delete: if isAdmin();
+      }
+    }
+
+    // 오늘 방문자 수: visits/{한국 날짜 번호} = {n}. 한 번에 1씩만
+    match /visits/{d} {
+      function vToday() { return math.floor((request.time.toMillis() + 32400000) / 86400000); }
+      allow read: if true;
+      allow create: if signedIn() && int(d) == vToday()
+        && request.resource.data.keys().hasOnly(['n']) && request.resource.data.n == 1;
+      allow update: if signedIn() && int(d) == vToday()
+        && request.resource.data.keys().hasOnly(['n']) && request.resource.data.n == resource.data.n + 1;
     }
 
     match /admins/{uid} {
