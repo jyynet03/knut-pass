@@ -31,6 +31,11 @@ service cloud.firestore {
         || (n.get('photoDay', -1) == o.get('photoDay', -1) && n.get('photoPlace', '') == o.get('photoPlace', ''))
         || (n.get('photoDay', -1) == kday() && n.get('photoPlace', 0) is string && n.photoPlace.size() <= 80 && o.get('photoDay', -1) < kday());
     }
+    // 댓글 방식 고정: 기록 문서가 있으면 그 방식과 같아야, 없으면 이번에 같은 방식으로 함께 만들어야 함
+    function modeOk(p, anon) {
+      return (exists(p) && get(p).data.anon == anon)
+        || (!exists(p) && existsAfter(p) && getAfter(p).data.anon == anon);
+    }
     function keepOrNow(field) {
       return !(field in request.resource.data)
         || request.resource.data[field] == request.time
@@ -43,6 +48,7 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['lastPostAt', 'lastCommentAt', 'photoDay', 'photoPlace'])
         && keepOrNow('lastPostAt') && keepOrNow('lastCommentAt')
         && photoFieldsOk(request.resource.data, resource == null ? {} : resource.data);
+      allow delete: if signedIn() && me() == uid;
     }
 
     match /posts/{pid} {
@@ -73,7 +79,8 @@ service cloud.firestore {
 
       allow read: if true;
       allow create: if member() && cooled('lastPostAt', 30) && stamped('lastPostAt')
-        && request.resource.data.keys().hasOnly(['cat', 'title', 'body', 'nick', 'badges', 'uid', 'createdAt', 'likeCount', 'commentCount', 'reportCount', 'photo'])
+        && request.resource.data.keys().hasOnly(['cat', 'title', 'body', 'nick', 'badges', 'uid', 'createdAt', 'likeCount', 'commentCount', 'reportCount', 'photo', 'hasPhoto'])
+        && (!('hasPhoto' in request.resource.data) || request.resource.data.hasPhoto is bool)
         && (!('photo' in request.resource.data) || (request.resource.data.photo is string && request.resource.data.photo.size() <= 300000 && request.resource.data.photo.matches('^data:image/jpeg;base64,.*')))
         && request.resource.data.cat in ['꿀팁', '질문', '정보']
         && okText(request.resource.data.title, 60)
@@ -92,13 +99,20 @@ service cloud.firestore {
         allow create: if signedIn() && cooled('lastCommentAt', 10) && stamped('lastCommentAt')
           && request.resource.data.keys().hasOnly(['body', 'nick', 'badges', 'uid', 'createdAt'])
           && okText(request.resource.data.body, 500)
-          && okAuthor(request.resource.data);
+          && okAuthor(request.resource.data)
+          && modeOk(/databases/$(database)/documents/posts/$(pid)/cmode/$(me()), request.resource.data.nick == '익명');
         allow delete: if signedIn() && (resource.data.uid == me() || isAdmin());
       }
       match /likes/{uid} {
         allow read: if signedIn() && me() == uid;
         allow create: if signedIn() && me() == uid && request.resource.data.keys().size() == 0;
         allow delete: if signedIn() && me() == uid;
+      }
+      // 이 글에서 내 댓글 방식(익명 여부). 한 번 정하면 바꿀 수 없음
+      match /cmode/{uid} {
+        allow read: if signedIn() && me() == uid;
+        allow create: if signedIn() && me() == uid && request.resource.data.keys().hasOnly(['anon']) && request.resource.data.anon is bool;
+        allow update: if signedIn() && me() == uid && request.resource.data.keys().hasOnly(['anon']) && request.resource.data.anon == resource.data.anon;
       }
       match /reports/{uid} {
         allow read: if isAdmin();
@@ -248,11 +262,18 @@ service cloud.firestore {
       allow read: if true;
       allow create: if signedIn() && tid.matches('^[A-Za-z0-9_-]{1,40}$')
         && cooled('lastCommentAt', 10) && stamped('lastCommentAt')
-        && request.resource.data.keys().hasOnly(['body', 'nick', 'uid', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['body', 'nick', 'uid', 'createdAt', 'badges'])
+        && (!('badges' in request.resource.data) || (request.resource.data.badges is list && request.resource.data.badges.size() <= 3))
         && okText(request.resource.data.body, 500)
         && request.resource.data.nick is string && request.resource.data.nick.size() > 0 && request.resource.data.nick.size() <= 20
-        && request.resource.data.uid == me() && request.resource.data.createdAt == request.time;
+        && request.resource.data.uid == me() && request.resource.data.createdAt == request.time
+        && modeOk(/databases/$(database)/documents/tipcomments/$(tid)/mode/$(me()), request.resource.data.nick == '익명');
       allow delete: if signedIn() && (resource.data.uid == me() || isAdmin());
+    }
+    match /tipcomments/{tid}/mode/{uid} {
+      allow read: if signedIn() && me() == uid;
+      allow create: if signedIn() && me() == uid && request.resource.data.keys().hasOnly(['anon']) && request.resource.data.anon is bool;
+      allow update: if signedIn() && me() == uid && request.resource.data.keys().hasOnly(['anon']) && request.resource.data.anon == resource.data.anon;
     }
 
     // 장소 정보 고치기(위키): edits/{장소} = 지금 내용, edits/{장소}/h = 수정 기록. 닉네임 필수, 30초 간격
@@ -367,6 +388,26 @@ service cloud.firestore {
         && (!('vd' in request.resource.data) || request.resource.data.vd is int)
         && (!('fv' in request.resource.data) || request.resource.data.fv is int)
         && request.resource.data.at == request.time;
+      allow delete: if signedIn() && me() == uid;
+    }
+
+    // 게시글 사진: postimg/{글id}. 글 목록을 가볍게 하려고 따로 저장. 같은 요청에서 내 글이 만들어질 때만
+    match /postimg/{pid} {
+      allow read: if true;
+      allow create: if member()
+        && request.resource.data.keys().hasOnly(['uid', 'photo'])
+        && request.resource.data.uid == me()
+        && request.resource.data.photo is string && request.resource.data.photo.size() > 1000 && request.resource.data.photo.size() <= 300000
+        && request.resource.data.photo.matches('^data:image/jpeg;base64,.*')
+        && getAfter(/databases/$(database)/documents/posts/$(pid)).data.uid == me();
+      allow delete: if signedIn() && (resource.data.uid == me() || isAdmin());
+    }
+
+    // 계정 삭제 이유: 누가 썼는지 없이 이유만. 운영팀만 읽음
+    match /deletions/{id} {
+      allow read: if isAdmin();
+      allow create: if member() && request.resource.data.keys().hasOnly(['reason', 'at'])
+        && okText(request.resource.data.reason, 300) && request.resource.data.at == request.time;
     }
 
     match /admins/{uid} {
