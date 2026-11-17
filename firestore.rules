@@ -366,11 +366,25 @@ service cloud.firestore {
         && pd().pid is string && pd().pid.size() <= 40
         && (pd().pid == '' || placeDoc().uid != me() || math.floor((placeDoc().createdAt.toMillis() + 32400000) / 86400000) < kday())
         && getAfter(userDoc()).data.photoDay == kday() && getAfter(userDoc()).data.photoPlace == pd().k;
-      allow update: if signedIn()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reportCount'])
-        && request.resource.data.reportCount == resource.data.reportCount + 1
-        && !exists(prp2()) && existsAfter(prp2());
-      allow delete: if signedIn() && (resource.data.uid == me() || isAdmin());
+      // 신고 / 올린 사람이 내리기(자리는 그대로 잠김) / 2년이 지났거나 신고로 가려졌으면 새 사진으로 한 번 교체
+      allow update: if signedIn() && (
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reportCount'])
+          && request.resource.data.reportCount == resource.data.reportCount + 1
+          && !exists(prp2()) && existsAfter(prp2()))
+        || (resource.data.uid == me()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['photo'])
+          && request.resource.data.photo == '')
+        || (member()
+          && pd().keys().hasOnly(['k', 'slot', 'n', 'pid', 'uid', 'nick', 'photo', 'at', 'reportCount'])
+          && pd().k == resource.data.k && pd().slot == resource.data.slot && pd().pid == resource.data.pid
+          && okText(pd().n, 40) && pd().uid == me() && okNick(pd())
+          && pd().photo is string && pd().photo.size() > 1000 && pd().photo.size() <= 300000 && pd().photo.matches('^data:image/jpeg;base64,.*')
+          && pd().at == request.time && pd().reportCount == 0
+          && (request.time > resource.data.at + duration.value(730, 'd') || resource.data.reportCount >= 3)
+          && (pd().pid == '' || placeDoc().uid != me() || math.floor((placeDoc().createdAt.toMillis() + 32400000) / 86400000) < kday())
+          && getAfter(userDoc()).data.photoDay == kday() && getAfter(userDoc()).data.photoPlace == pd().k)
+      );
+      allow delete: if isAdmin();
       match /reports/{u} {
         allow read: if isAdmin();
         allow create: if signedIn() && me() == u && request.resource.data.keys().size() == 0;
