@@ -2109,7 +2109,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   }
   function myView(){
     if(S.my==="todo")S.my="goal"; /* 할 일·달력은 홈으로 옮겼다 */
-    var h=profCard()+chips([["set","설정"],["tt","시간표"],["dd","D-day"],["goal","목표"],["fav","즐겨찾기"],["friend","친구"+(SOC.req.length?" "+SOC.req.length:"")]],S.my,"mysub");
+    var h=profCard()+chips([["set","설정"],["tt","시간표"],["dd","D-day"],["goal","목표"],["fav","즐겨찾기"],["friend","친구"+(SOC.req.length+dmUnread()?" "+(SOC.req.length+dmUnread()):"")]],S.my,"mysub");
     if(S.my==="friend")return h+friendView();
     if(S.my==="todo"){
       var all=todos(),td=today();
@@ -2202,11 +2202,29 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
       if(join)return;return FB.db.collection("profiles").doc(FB.uid).get().then(function(d){store("ut-profile",d.exists?{name:d.data().nick,photo:""}:{})},function(){})
     }).then(function(){closeSheet();toast(join?"가입했어요. 다음부터 이 학번으로 로그인하세요.":"로그인했어요.");render();if(SOC.pend){var pf=SOC.pend;SOC.pend=null;setTimeout(function(){friendByNick(pf)},600)}else if(!join&&!TOUR&&!store("ut-tour-never"))setTimeout(tourStart,900)},function(e){toast(authErr(e))});
   }
-  function doLogout(){if(PSYNC.unsub){PSYNC.unsub();PSYNC.unsub=null;PSYNC.uid=null}SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=null;SOC.req=[];SOC.fr=[];SOC.dm=[];var A=window.firebase.auth();A.signOut().then(function(){return A.signInAnonymously()}).then(function(c){FB.uid=c.user.uid;FB.email=null;FB.admin=false;store("ut-profile",{});closeSheet();toast("로그아웃했어요.");render()},function(e){toast(authErr(e))})}
+  function doLogout(){SOC.dmIds=null;try{navigator.clearAppBadge&&navigator.clearAppBadge().catch(function(){})}catch(e){}if(PSYNC.unsub){PSYNC.unsub();PSYNC.unsub=null;PSYNC.uid=null}SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=null;SOC.req=[];SOC.fr=[];SOC.dm=[];var A=window.firebase.auth();A.signOut().then(function(){return A.signInAnonymously()}).then(function(c){FB.uid=c.user.uid;FB.email=null;FB.admin=false;store("ut-profile",{});closeSheet();toast("로그아웃했어요.");render()},function(e){toast(authErr(e))})}
   /* 정보 고치기(위키): edits/{장소} 에 지금 내용, edits/{장소}/h 에 기록. 처음 정보는 앱에 들어 있는 운영팀 정리본 */
   /* ===== 친구·쪽지 (학번 로그인 + 닉네임 필요) =====
      friendreq/{받는 사람}/r/{보낸 사람}, friends/{나}/f/{친구}, dm/{받는 사람}/m/{쪽지} */
   var SOC={uid:null,req:[],fr:[],dm:[],subs:[],pend:null};
+  /* 안 읽은 쪽지: 마지막으로 친구 탭을 본 시각보다 늦게 온 쪽지 (이 기기 기준) */
+  function dmTime(m){return m.at&&m.at.toMillis?m.at.toMillis():Date.now()}
+  function dmUnread(){if(!SOC.uid)return 0;var seen=store("ut-dmseen-"+SOC.uid)||0;return SOC.dm.filter(function(m){return dmTime(m)>seen}).length}
+  function dmSeen(){if(!SOC.uid||!SOC.dm.length)return;var mx=Math.max.apply(null,SOC.dm.map(dmTime));if(mx>(store("ut-dmseen-"+SOC.uid)||0)){store("ut-dmseen-"+SOC.uid,mx);badgeUpdate()}}
+  function badgeUpdate(){var n=SOC.req.length+dmUnread();try{if(navigator.setAppBadge){if(n)navigator.setAppBadge(n).catch(function(){});else navigator.clearAppBadge().catch(function(){})}}catch(e){}
+    var c=document.querySelector('[data-mysub="friend"]');if(c)c.textContent="친구"+(n?" "+n:"")}
+  /* 새 쪽지: 처음 불러올 때는 조용히, 그 뒤에 새로 온 것만 알림 */
+  function dmNotify(){var ids=SOC.dm.map(function(m){return m.id});
+    if(SOC.dmIds){var fresh=SOC.dm.filter(function(m){return SOC.dmIds.indexOf(m.id)<0});
+      fresh.forEach(function(m){var t=(m.nick||"누군가")+"님에게서 쪽지가 왔어요";
+        if(document.hidden&&window.Notification&&Notification.permission==="granted"){var body=String(maskBad(m.body||"")).slice(0,60);
+          if(navigator.serviceWorker&&navigator.serviceWorker.ready)navigator.serviceWorker.ready.then(function(r){r.showNotification(t,{body:body,icon:"icon-192.png",badge:"icon-192.png",tag:"dm-"+m.id})}).catch(function(){try{new Notification(t,{body:body,icon:"icon-192.png"})}catch(e){}});
+          else try{new Notification(t,{body:body,icon:"icon-192.png"})}catch(e){}}
+        else toast(t)})}
+    SOC.dmIds=ids}
+  function notiBtn(){if(!window.Notification)return "";if(Notification.permission==="granted")return '<p class="hint" style="margin:8px 2px 0">새 쪽지 알림이 켜져 있어요. 앱이 열려 있을 때 알려 드려요.</p>';
+    if(Notification.permission==="denied")return '<p class="hint" style="margin:8px 2px 0">브라우저에서 알림이 꺼져 있어요. 사이트 설정에서 알림을 허용하면 새 쪽지를 알려 드려요.</p>';
+    return '<button class="linkbar" data-notion="1" style="margin-top:10px">'+ico("chat")+'<span class="main"><span class="name" style="display:block">새 쪽지 알림 켜기</span><span class="sub" style="display:block">앱이 열려 있을 때 새 쪽지를 알려 드려요</span></span></button>'}
   function isFriend(u){return SOC.fr.some(function(x){return x.id===u})}
   function needMember(what){if(!BOARD_LIVE){toast(what+"은 공개 사이트에서 쓸 수 있어요.");return false}if(!FB.email){toast(what+"은 학번으로 로그인해야 쓸 수 있어요.");loginSheet();return false}if(!profile().name){toast("닉네임을 먼저 정해 주세요.");profSheet();return false}return true}
   var PSYNC={uid:null,unsub:null};
@@ -2216,8 +2234,8 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     PSYNC.unsub=FB.db.collection("profiles").doc(FB.uid).onSnapshot(function(d){if(!d.exists)return;var n=d.data().nick||"",cur=profile().name||"";
       if(n&&n!==cur){store("ut-profile",{name:n,photo:""});if(page.hidden&&sheet.hidden)render()}},function(){})}
   function loadSocial(){syncProfile();if(!BOARD_LIVE||!FB.ready||!FB.email)return;if(SOC.uid===FB.uid)return;
-    SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=FB.uid;SOC.req=[];SOC.fr=[];SOC.dm=[];var me=FB.uid,db=FB.db;
-    var up=function(){var b=document.getElementById("socbox");if(b)b.innerHTML=socialHtml();if(S.tab==="my"&&S.my!=="friend"&&page.hidden&&sheet.hidden)render()};
+    SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=FB.uid;SOC.dmIds=null;SOC.req=[];SOC.fr=[];SOC.dm=[];var me=FB.uid,db=FB.db;
+    var up=function(){dmNotify();var b=document.getElementById("socbox");if(b)b.innerHTML=socialHtml();if(b&&S.tab==="my"&&S.my==="friend")dmSeen();badgeUpdate();if(S.tab==="my"&&S.my!=="friend"&&page.hidden&&sheet.hidden)render()};
     var on=function(q,key){SOC.subs.push(q.onSnapshot(function(s){SOC[key]=s.docs.map(function(d){var x=d.data();x.id=d.id;return x});up()},function(){}))};
     on(db.collection("friendreq").doc(me).collection("r"),"req");on(db.collection("friends").doc(me).collection("f"),"fr");on(db.collection("dm").doc(me).collection("m").orderBy("at","desc").limit(50),"dm")}
   function nickLink(u,n){return '<button class="lnk byl" data-pv="'+esc(u)+'">'+avHtml("",n,"sm")+esc(n||"")+'</button>'}
@@ -2230,8 +2248,8 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     if(!BOARD_LIVE)return '<p class="empty">친구와 쪽지는 공개 사이트에서 쓸 수 있어요.</p>';
     if(!FB.email)return '<div class="group"><div class="card"><p class="note">친구 맺기와 쪽지는 학번으로 로그인해야 쓸 수 있어요.</p><div class="acts"><button class="btn pri" data-login="open">학번으로 로그인</button></div></div></div>';
     var nm=profile().name;if(!nm)return '<div class="group"><div class="card"><p class="note">친구 맺기에는 닉네임이 아이디로 쓰여요. 닉네임을 먼저 정해 주세요.</p><div class="acts"><button class="btn pri" data-prof="1">닉네임 정하기</button></div></div></div>';
-    loadSocial();
-    return h2("내 아이디")+'<div class="group"><div class="irow"><span><small>친구가 이 아이디로 나를 추가할 수 있어요</small>'+esc(nm)+'</span><button class="copy" data-fshare="1">공유</button></div></div>'+
+    loadSocial();setTimeout(dmSeen,0);
+    return h2("내 아이디")+notiBtn()+'<div class="group"><div class="irow"><span><small>친구가 이 아이디로 나를 추가할 수 있어요</small>'+esc(nm)+'</span><button class="copy" data-fshare="1">공유</button></div></div>'+
       h2("아이디로 친구 추가")+'<form id="faddform" class="tq" style="padding:0"><input id="fa-nick" maxlength="12" placeholder="친구 아이디(닉네임)" aria-label="친구 아이디"><button class="copy" type="submit">신청</button></form>'+
       '<div id="socbox">'+socialHtml()+'</div>'}
   function friendReq(u,n){if(!needMember("친구 맺기"))return;loadSocial();
@@ -2659,7 +2677,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     if(tab==="campus"){S.sub=sub||"bldg";S.bz="all"}
     if(tab==="acad")S.asub=sub||"flow";
     if(tab==="tips")S.tcat=sub||"all";
-    if(tab==="my")S.my=(sub&&sub!=="todo")?sub:(S.my&&S.my!=="todo"?S.my:"goal");
+    if(tab==="my")S.my=(sub&&sub!=="todo")?sub:"set"; /* 탭으로 들어오면 늘 맨 앞 카테고리(설정)부터 */
     if(tab==="board")S.bcat=sub||"전체";
     if(tab==="board"&&FB_CONFIG&&PUBLIC_SITE)fbLoad(function(){boardSub();if(S.tab==="board")render()});
     render();window.scrollTo(0,0);
@@ -2745,7 +2763,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   bar.addEventListener("click",function(e){if(e.target.closest(".bar-m")){e.stopPropagation();openSearch()}},true);
   bar.addEventListener("click",function(e){var b=e.target.closest(".tabbtn");if(b)go(b.dataset.tab)});
   root.addEventListener("click",function(e){
-    var t=e.target.closest("[data-freq],[data-facc],[data-fdec],[data-fdel],[data-dmto],[data-dmdel],[data-fshare],[data-tour],[data-tourx],[data-tourn],[data-login],[data-logout],[data-pedit],[data-phist],[data-prev],[data-tcdel],[data-ppx],[data-go],[data-cat],[data-zone],[data-kind],[data-sub],[data-bz],[data-asub],[data-tcat],[data-b],[data-close],[data-add],[data-del],[data-pin],[data-mz],[data-fav],[data-pick],[data-mapsel],[data-share],[data-theme],[data-ttdel],[data-dddel],[data-mysub],[data-tadd],[data-tdd],[data-tdel],[data-tclear],[data-tq],[data-hedit],[data-mjump],[data-bmap],[data-snav],[data-cal],[data-calnav],[data-prof],[data-gstep],[data-gdone],[data-gundo],[data-gdel],[data-bcat],[data-write],[data-post],[data-like],[data-report],[data-pdel],[data-cdel],[data-back],[data-place],[data-tip],[data-info],[data-grp],[data-pdet],[data-cc],[data-mhelp],[data-tlike],[data-calwk],[data-calopen],[data-calview],[data-kw],[data-rules],[data-tcj],[data-pv],[data-pfno],[data-addplace],[data-addplace2],[data-pmz],[data-achdel],[data-achrep],[data-plrep],[data-pldel],.copy-btn");
+    var t=e.target.closest("[data-notion],[data-freq],[data-facc],[data-fdec],[data-fdel],[data-dmto],[data-dmdel],[data-fshare],[data-tour],[data-tourx],[data-tourn],[data-login],[data-logout],[data-pedit],[data-phist],[data-prev],[data-tcdel],[data-ppx],[data-go],[data-cat],[data-zone],[data-kind],[data-sub],[data-bz],[data-asub],[data-tcat],[data-b],[data-close],[data-add],[data-del],[data-pin],[data-mz],[data-fav],[data-pick],[data-mapsel],[data-share],[data-theme],[data-ttdel],[data-dddel],[data-mysub],[data-tadd],[data-tdd],[data-tdel],[data-tclear],[data-tq],[data-hedit],[data-mjump],[data-bmap],[data-snav],[data-cal],[data-calnav],[data-prof],[data-gstep],[data-gdone],[data-gundo],[data-gdel],[data-bcat],[data-write],[data-post],[data-like],[data-report],[data-pdel],[data-cdel],[data-back],[data-place],[data-tip],[data-info],[data-grp],[data-pdet],[data-cc],[data-mhelp],[data-tlike],[data-calwk],[data-calopen],[data-calview],[data-kw],[data-rules],[data-tcj],[data-pv],[data-pfno],[data-addplace],[data-addplace2],[data-pmz],[data-achdel],[data-achrep],[data-plrep],[data-pldel],.copy-btn");
     if(!t)return;
     var ds=t.dataset||{};
     if(MAPDRAGGED&&t.closest("#msvg"))return;
@@ -2784,6 +2802,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     if(ds.gdel){if(t.textContent!=="정말 삭제"){t.textContent="정말 삭제";return}store("ut-goals",goals().filter(function(x){return x.id!==ds.gdel}));render();return}
     if(ds.bcat){S.bcat=ds.bcat;render();return}
     if(ds.tcj){var th=[].filter.call(document.querySelectorAll(".tch"),function(x){return x.getAttribute("data-tch")===ds.tcj})[0];if(th)th.scrollIntoView({behavior:"smooth",block:"start"});return}
+    if(ds.notion){Notification.requestPermission().then(function(p){toast(p==="granted"?"새 쪽지 알림을 켰어요.":"알림을 허용하지 않았어요.");render()});return}
     if(ds.freq){friendReq(ds.freq,ds.fn||"");return}
     if(ds.facc){friendAccept(ds.facc,ds.fn||"");return}
     if(ds.fdec){FB.db.collection("friendreq").doc(FB.uid).collection("r").doc(ds.fdec).delete().then(function(){toast("거절했어요.")},function(){});return}
