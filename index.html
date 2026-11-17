@@ -2109,7 +2109,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   }
   function myView(){
     if(S.my==="todo")S.my="goal"; /* 할 일·달력은 홈으로 옮겼다 */
-    var h=profCard()+chips([["goal","목표"],["friend","친구"+(SOC.req.length?" "+SOC.req.length:"")],["tt","시간표"],["dd","D-day"],["fav","즐겨찾기"],["set","설정"]],S.my,"mysub");
+    var h=profCard()+chips([["set","설정"],["tt","시간표"],["dd","D-day"],["goal","목표"],["fav","즐겨찾기"],["friend","친구"+(SOC.req.length?" "+SOC.req.length:"")]],S.my,"mysub");
     if(S.my==="friend")return h+friendView();
     if(S.my==="todo"){
       var all=todos(),td=today();
