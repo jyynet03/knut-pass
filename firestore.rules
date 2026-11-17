@@ -24,6 +24,13 @@ service cloud.firestore {
         || request.time > get(userDoc()).data[field] + duration.value(secs, 's');
     }
     function stamped(field) { return getAfter(userDoc()).data[field] == request.time; }
+    function kday() { return math.floor((request.time.toMillis() + 32400000) / 86400000); }
+    // 사진 하루 한 곳: photoDay·photoPlace는 그대로 두거나, 전날 이전 값일 때만 오늘 값으로 바꿀 수 있음
+    function photoFieldsOk(n, o) {
+      return (!('photoDay' in n) && !('photoPlace' in n))
+        || (n.get('photoDay', -1) == o.get('photoDay', -1) && n.get('photoPlace', '') == o.get('photoPlace', ''))
+        || (n.get('photoDay', -1) == kday() && n.get('photoPlace', 0) is string && n.photoPlace.size() <= 80 && o.get('photoDay', -1) < kday());
+    }
     function keepOrNow(field) {
       return !(field in request.resource.data)
         || request.resource.data[field] == request.time
@@ -33,8 +40,9 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if signedIn() && me() == uid;
       allow create, update: if signedIn() && me() == uid
-        && request.resource.data.keys().hasOnly(['lastPostAt', 'lastCommentAt'])
-        && keepOrNow('lastPostAt') && keepOrNow('lastCommentAt');
+        && request.resource.data.keys().hasOnly(['lastPostAt', 'lastCommentAt', 'photoDay', 'photoPlace'])
+        && keepOrNow('lastPostAt') && keepOrNow('lastCommentAt')
+        && photoFieldsOk(request.resource.data, resource == null ? {} : resource.data);
     }
 
     match /posts/{pid} {
@@ -307,6 +315,57 @@ service cloud.firestore {
         && request.resource.data.from == me() && okNick(request.resource.data)
         && okText(request.resource.data.body, 500)
         && request.resource.data.ctx is string && request.resource.data.ctx.size() <= 60
+        && request.resource.data.at == request.time;
+    }
+
+    // 보낸 쪽지함: dmsent/{나}/m/{쪽지}. 나만 읽고 쓰고 지움 (대화 화면에 내가 보낸 쪽지 표시용)
+    match /dmsent/{owner}/m/{mid} {
+      allow read, delete: if signedIn() && me() == owner;
+      allow create: if member() && me() == owner
+        && request.resource.data.keys().hasOnly(['to', 'nick', 'body', 'ctx', 'at'])
+        && request.resource.data.to is string && request.resource.data.to.size() <= 128
+        && okNick(request.resource.data)
+        && okText(request.resource.data.body, 500)
+        && request.resource.data.ctx is string && request.resource.data.ctx.size() <= 60
+        && request.resource.data.at == request.time;
+    }
+
+    // 꿀팁장소 사진: placephotos/{장소키__main|food}. 선착순(덮어쓰기 불가), 하루 한 곳, 직접 등록한 장소는 다음 날부터
+    match /placephotos/{ph} {
+      function pd() { return request.resource.data; }
+      function placeDoc() { return get(/databases/$(database)/documents/places/$(pd().pid)).data; }
+      function prp2() { return /databases/$(database)/documents/placephotos/$(ph)/reports/$(me()); }
+      allow read: if true;
+      allow create: if member()
+        && pd().keys().hasOnly(['k', 'slot', 'n', 'pid', 'uid', 'nick', 'photo', 'at', 'reportCount'])
+        && pd().slot in ['main', 'food'] && pd().k is string && pd().k.size() <= 80 && ph == pd().k + '__' + pd().slot
+        && okText(pd().n, 40) && pd().uid == me() && okNick(pd())
+        && pd().photo is string && pd().photo.size() > 1000 && pd().photo.size() <= 300000 && pd().photo.matches('^data:image/jpeg;base64,.*')
+        && pd().at == request.time && pd().reportCount == 0
+        && pd().pid is string && pd().pid.size() <= 40
+        && (pd().pid == '' || placeDoc().uid != me() || math.floor((placeDoc().createdAt.toMillis() + 32400000) / 86400000) < kday())
+        && getAfter(userDoc()).data.photoDay == kday() && getAfter(userDoc()).data.photoPlace == pd().k;
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reportCount'])
+        && request.resource.data.reportCount == resource.data.reportCount + 1
+        && !exists(prp2()) && existsAfter(prp2());
+      allow delete: if signedIn() && (resource.data.uid == me() || isAdmin());
+      match /reports/{u} {
+        allow read: if isAdmin();
+        allow create: if signedIn() && me() == u && request.resource.data.keys().size() == 0;
+      }
+    }
+
+    // 통통 가이드 업적: ubadges/{uid} = 얻은 업적 목록, 고른 프로필 이미지·타이틀. 누구나 보기, 본인만 쓰기
+    match /ubadges/{uid} {
+      allow read: if true;
+      allow create, update: if member() && me() == uid
+        && request.resource.data.keys().hasOnly(['ids', 'selA', 'selT', 'vd', 'fv', 'at'])
+        && (!('ids' in request.resource.data) || (request.resource.data.ids is list && request.resource.data.ids.size() <= 80))
+        && request.resource.data.selA is string && request.resource.data.selA.size() <= 20
+        && request.resource.data.selT is string && request.resource.data.selT.size() <= 20
+        && (!('vd' in request.resource.data) || request.resource.data.vd is int)
+        && (!('fv' in request.resource.data) || request.resource.data.fv is int)
         && request.resource.data.at == request.time;
     }
 
