@@ -1467,7 +1467,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     var b=k.toUpperCase();if(BMAP[b])buildingSheet(b);
   }
 
-  /* 오늘 뭐 먹지: 돌림판. 후보 8곳을 올리고 천천히 감속해 멈춘다 */
+  /* 지금 뭐 먹지: 돌림판. 후보 8곳을 올리고 천천히 감속해 멈춘다 */
   var WHEELC=["#1d4fb8","#ffc21a","#0f9d58","#ef7d00","#8a4fe0","#e2414a","#0e7490","#f0532d"];
   /* 지역: 시내 / 학교 근처(대학가+캠퍼스). 그 지역에서 지금 영업 중인 밥집을 전부 돌림판에 올린다 */
   var PICKZ={city:{name:"시내",sub:"연수동·칠금동 등 시내",z:["시내"]},near:{name:"학교 앞",sub:"학교 앞 거리·캠퍼스 안",z:["대학가","캠퍼스"]}};
@@ -1476,11 +1476,11 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     if(!PICKZ[k]){
       var b=Object.keys(PICKZ).map(function(key){var z=PICKZ[key],n=pickPool(key).length;
         return '<button class="pz" data-pick="'+key+'"'+(n?'':' disabled')+'><span class="pz-n">'+z.name+'</span><span class="pz-s">'+z.sub+'</span><span class="pz-c">'+(n?'지금 영업 중 '+n+'곳':'지금 영업 중인 곳 없음')+'</span></button>'}).join("");
-      openSheet('<div class="sh-name" style="text-align:center">오늘 뭐 먹지?</div><p class="hint" style="text-align:center;margin:4px 0 0">어디서 먹을지 먼저 골라 주세요</p><div class="pzs">'+b+'</div>',"오늘 뭐 먹지");
+      openSheet('<div class="sh-name" style="text-align:center">지금 뭐 먹지?</div><p class="hint" style="text-align:center;margin:4px 0 0">어디서 먹을지 먼저 골라 주세요</p><div class="pzs">'+b+'</div>',"지금 뭐 먹지");
       return;
     }
     var c=pickPool(k);
-    if(!c.length){openSheet('<div class="sh-name" style="text-align:center">오늘 뭐 먹지?</div>'+emptyBox(PICKZ[k].name+"에 지금 영업 중인 밥집이 없어요")+'<div class="acts" style="margin-top:14px"><button class="btn" data-pick="1">지역 다시 고르기</button></div>',"오늘 뭐 먹지");return}
+    if(!c.length){openSheet('<div class="sh-name" style="text-align:center">지금 뭐 먹지?</div>'+emptyBox(PICKZ[k].name+"에 지금 영업 중인 밥집이 없어요")+'<div class="acts" style="margin-top:14px"><button class="btn" data-pick="1">지역 다시 고르기</button></div>',"지금 뭐 먹지");return}
     for(var i=c.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),tmp=c[i];c[i]=c[j];c[j]=tmp}
     var n=c.length,seg=360/n,win=Math.floor(Math.random()*n),R=110,cx=120,cy=120,svg="";
     var fs=Math.max(6.5,Math.min(12.5,seg*0.62)),maxc=Math.max(3,Math.floor(62/fs));
@@ -1493,10 +1493,10 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
       svg+='<text transform="rotate('+mid+' '+cx+' '+cy+')" x="'+cx+'" y="'+(cy-R+10)+'" text-anchor="start" font-size="'+fs.toFixed(1)+'" font-weight="800" fill="'+(dark?"#1b1b1b":"#ffffff")+'" writing-mode="tb">'+esc(nm)+'</text>';
     });
     svg+='<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="none" stroke="#ffffff" stroke-width="5"/>';
-    var h='<div class="sh-name" style="text-align:center">오늘 뭐 먹지? · '+PICKZ[k].name+'</div><p class="hint" style="text-align:center;margin:4px 0 0">지금 영업 중인 '+n+'곳을 전부 올렸어요</p>'+
+    var h='<div class="sh-name" style="text-align:center">지금 뭐 먹지? · '+PICKZ[k].name+'</div><p class="hint" style="text-align:center;margin:4px 0 0">지금 영업 중인 '+n+'곳을 전부 올렸어요</p>'+
       '<div class="wheel-wrap"><div class="wheel-ptr"></div><div class="wheel" id="wheel"><svg viewBox="0 0 240 240" aria-hidden="true">'+svg+'</svg></div><div class="wheel-hub">'+mascot("happy")+'</div></div>'+
       '<div id="pick-res" class="pick-res" aria-live="polite"><p class="hint" style="text-align:center">통통이가 돌리는 중…</p></div>';
-    openSheet(h,"오늘 뭐 먹지");
+    openSheet(h,"지금 뭐 먹지");
     var tok=pickSheet.tok=(pickSheet.tok||0)+1;bcInc("spin");
     var w=document.getElementById("wheel"),target=360*7-(win*seg+seg/2)+(Math.random()*seg*0.6-seg*0.3),dur=matchMedia("(prefers-reduced-motion: reduce)").matches?600:5600;
     requestAnimationFrame(function(){requestAnimationFrame(function(){w.style.transition="transform "+dur+"ms cubic-bezier(.12,.62,.14,1)";w.style.transform="rotate("+target+"deg)"})});
@@ -1515,7 +1515,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     var h='<div class="pick-m">'+mascot("happy")+'<span class="bubble">이거 어때요?</span></div><div class="big" style="text-align:center">'+esc(it.name)+'</div><div class="sub" style="text-align:center">'+esc([zoneName(it),it.menu,st?st.t:""].filter(Boolean).join(" · "))+'</div>'+
       (it.note?'<p class="note" style="margin-top:10px">'+esc(it.note)+'</p>':'')+(note?'<p class="hint">'+note+'</p>':'')+
       '<div class="acts" style="margin-top:16px"><button class="btn pri" data-mapsel="'+esc(it.name)+'">지도에서 보기</button><button class="btn" data-pick="'+esc(it.name)+'">'+ico("dice")+'다시 뽑기</button></div>';
-    openSheet(h,"오늘 뭐 먹지");
+    openSheet(h,"지금 뭐 먹지");
   }
   function shareSheet(){
     var h='<div class="sh-name">친구에게 알려주기</div><p class="hint">링크를 보내거나 QR 코드를 보여 주세요. OT, 단톡방, 생활관 게시판에 붙이기 좋아요.</p>'+
@@ -1863,7 +1863,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   }
   function homeView(){
     var now=new Date(),di=(now.getDay()+6)%7,nm=now.getHours()*60+now.getMinutes(),h="";
-    /* 홈 순서: 4버튼 → 오늘 내 수업 → 할 일 달력(하루/한주/한달) → 오늘의 HOT 이슈 → 오늘 뭐 먹지 → 링크 모음 */
+    /* 홈 순서: 4버튼 → 오늘 내 수업 → 할 일 달력(하루/한주/한달) → 오늘의 HOT 이슈 → 지금 뭐 먹지 → 링크 모음 */
     var Q=[["맛집","place","food","eat","sg"],["교통","transit","","bus","qy"],["꿀팁","board","","tip","qp"],["내 프로필","my","goal","user","qm"]];
     h+='<div class="grid g4" style="margin-top:4px;margin-bottom:16px">'+Q.map(function(q){return '<button class="q" data-go="'+q[1]+'" data-gc="'+q[2]+'"><span class="qi '+q[4]+'">'+ico(q[3])+'</span>'+q[0]+'</button>'}).join("")+'</div>';
     var tt=store("ut-tt")||[],tc=tt.filter(function(c){return c.day===di}).sort(function(a,b){return toMin(a.t)-toMin(b.t)});
@@ -1880,7 +1880,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     /* 할 일 달력 (MY에서 옮겨 옴): 날짜를 누르면 그날 할 일을 보고 추가 */
     h+='<div style="height:14px"></div>'+calHtml(true);
     h+='<div style="height:6px"></div>'+hotHtml();
-    h+='<button class="pick" data-pick="1">'+ico("dice")+'<span class="main"><span class="name" style="display:block">오늘 뭐 먹지?</span><span class="sub" style="display:block">시내·학교 앞 중 고르고 돌림판을 돌려요</span></span></button>';
+    h+='<button class="pick" data-pick="1">'+ico("dice")+'<span class="main"><span class="name" style="display:block">지금 뭐 먹지?</span><span class="sub" style="display:block">시내·학교 앞 중 고르고 돌림판을 돌려요</span></span></button>';
     h+='<button class="linkbar" data-go="links">'+ico("link")+'<span class="main"><span class="name" style="display:block">교통대 링크 모음</span><span class="sub" style="display:block">포털, ecampus, 도서관, 식단, 통학버스, 공식 블로그</span></span>'+ico("down","chev")+'</button>';
     return h+'<p class="foot">학생이 만든 비공식 가이드 · <a href="https://www.ut.ac.kr" target="_blank" rel="noopener">학교 홈페이지</a></p>';
   }
@@ -1907,7 +1907,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     var dd=nextDday();if(dd)h+='<button class="dday" data-go="my" data-gc="dd">'+esc(dd.label)+' · '+esc(dd.name)+'</button>';
     var Q=[["밥집","place","eat","eat"],["카페","place","cafe","cafe"],["편의점","place","conv","conv"],["프린트","place","print","print"],["건물","campus","bldg","campus"],["생활관","campus","dorm","dorm"],["교통","transit","","bus"],["학사","acad","","cal"]];
     h+='<div class="grid" style="margin-top:18px">'+Q.map(function(q){return '<button class="q" data-go="'+q[1]+'" data-gc="'+q[2]+'"><span class="qi'+(q[1]==="place"?" sg":"")+'">'+ico(q[3])+'</span>'+q[0]+'</button>'}).join("")+'</div>';
-    h+='<button class="pick" data-pick="1">'+ico("dice")+'<span class="main"><span class="name" style="display:block">오늘 뭐 먹지?</span><span class="sub" style="display:block">지금 영업 중인 밥집에서 하나 골라 드려요</span></span></button>';
+    h+='<button class="pick" data-pick="1">'+ico("dice")+'<span class="main"><span class="name" style="display:block">지금 뭐 먹지?</span><span class="sub" style="display:block">지금 영업 중인 밥집에서 하나 골라 드려요</span></span></button>';
     h+='<button class="linkbar" data-go="links">'+ico("link")+'<span class="main"><span class="name" style="display:block">교통대 링크 모음</span><span class="sub" style="display:block">포털, ecampus, 도서관, 식단, 통학버스, 공식 블로그</span></span>'+ico("down","chev")+'</button>';
     var di2=Math.floor(Date.now()/864e5);
     if(TIPS.length)h+=h2("오늘의 꿀팁"+(NEWIDS.length?' <span class="new">새 꿀팁 '+NEWIDS.length+'</span>':''),'<button class="more" data-go="tips">전체 '+TIPS.length+'개</button>')+tipList([TIPS[di2%TIPS.length]]);
@@ -2446,7 +2446,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     {id:"cinder",e:"🕛",t:"집에 안 간 신데렐라",r:"l",h:1,d:"자정 0시 0분~4분 사이에 접속",f:function(s){return s.cinder}},
     {id:"rain",e:"☔",t:"우산 없는 낭만파",r:"r",h:1,d:"비 오는 날 통통 가이드 접속",f:function(s){return s.rain}},
     {id:"snow",e:"⛄",t:"눈사람 제작 위원회",r:"e",h:1,d:"눈 오는 날 통통 가이드 접속",f:function(s){return s.snow}},
-    {id:"spin",e:"🎰",t:"결정 장애 졸업 실패",r:"e",h:1,d:"'오늘 뭐 먹지' 돌림판 20번 돌리기",f:function(s){return s.spin>=20}},
+    {id:"spin",e:"🎰",t:"결정 장애 졸업 실패",r:"e",h:1,d:"'지금 뭐 먹지' 돌림판 20번 돌리기",f:function(s){return s.spin>=20}},
     {id:"masc",e:"🫨",t:"통통이 괴롭히기 장인",r:"l",h:1,d:"홈 화면 통통이를 30번 누르기",f:function(s){return s.masc>=30}},
     {id:"pubfri",e:"🍻",t:"불금 탐사대장",r:"e",h:1,d:"금요일 저녁 6시 이후 술집 5곳 구경",f:function(s){return s.pubfri>=5}},
     {id:"tour",e:"🎓",t:"설명서 정독러",r:"r",h:1,d:"사용방법 안내를 끝까지 완주",f:function(s){return s.tour}},
