@@ -2991,7 +2991,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   var TSTEPS1=[
     {go:["my","tt"],el:"#ttform",t:"시간표에 수업 넣기",d:"요일·시간·과목·강의실(예: E14-205)을 적고 <b>수업 추가</b>를 눌러 보세요. 홈 화면에 오늘 갈 건물이 떠요.",wait:function(){return (store("ut-tt")||[]).length>TOUR.tt}},
     {go:["home"],el:"#tododay",t:"오늘 할 일 넣기",d:"오늘 할 일을 하나 적고 <b>추가</b>를 눌러 보세요. 달력에 점으로 표시되고, 끝내면 체크해요.",wait:function(){return todos().length>TOUR.td}},
-    {go:["place","food"],el:"#view .chips",t:"꿀팁장소",d:"<b>학교 앞·캠퍼스·시내</b>를 고르면 지도와 목록이 바뀌어요. 가게를 누르면 영업시간·위치가 나오고, 아는 곳은 직접 추가하거나 정보를 고칠 수 있어요."},
+    {go:["place","food"],el:"#view .chips",n:3,t:"꿀팁장소",d:"버튼이 세 줄이에요. <b>① 지역</b>(학교 앞·캠퍼스·시내) → <b>② 종류</b>(음식·카페·편의점·술집·편의·여가) → <b>③ 세부 종류</b>를 차례로 고르면 지도와 목록이 바뀌어요. 가게를 누르면 영업시간·위치가 나오고, 아는 곳은 직접 추가하거나 정보를 고칠 수 있어요."},
     {go:["campus"],el:"#view .chips",t:"학교",d:"위 버튼으로 <b>교통·학사·건물·생활관·학교 정보·링크</b>를 골라요. 버스 시간, 학사일정, 건물 번호 읽는 법이 여기 있어요."},
     {go:["board"],el:"#view .chips",t:"게시판",d:"<b>선배들이 쓴 꿀팁 101가지</b>와 학생 글이 모여 있어요. 글쓰기로 질문하고, 마음에 드는 꿀팁엔 따봉과 댓글을 남겨요."}
     ,{when:function(){return !standalone()},go:["home"],el:null,t:"폰·PC 화면에 바로가기 넣기",d:"",dyn:instHtml,last:1}
@@ -3012,9 +3012,9 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     var sp0=box.querySelector(".tr-spot"),ar0=box.querySelector(".tr-arrow"),bu0=box.querySelector(".tr-bub");
     if(!s.el){sp0.style.cssText="left:50%;top:50%;width:0;height:0;animation:none";ar0.style.display="none";bu0.style.top=Math.max(12,(window.innerHeight-bu0.offsetHeight)/2)+"px";return}
     ar0.style.display="";sp0.style.animation="";
-    var el=document.querySelector(s.el);if(!el)return;
+    var els=[].slice.call(document.querySelectorAll(s.el),0,s.n||1),el=els[0];if(!el)return;
     if(!TOUR.scrolled){TOUR.scrolled=true;el.scrollIntoView({block:"center",behavior:"smooth"});return}
-    var r=el.getBoundingClientRect(),sp=box.querySelector(".tr-spot"),ar=box.querySelector(".tr-arrow"),bu=box.querySelector(".tr-bub"),pad=6,vh=window.innerHeight;
+    var r=els.reduce(function(a,x){var q=x.getBoundingClientRect();return a?{left:Math.min(a.left,q.left),top:Math.min(a.top,q.top),right:Math.max(a.right,q.right),bottom:Math.max(a.bottom,q.bottom)}:{left:q.left,top:q.top,right:q.right,bottom:q.bottom}},null);r.width=r.right-r.left;r.height=r.bottom-r.top;var sp=box.querySelector(".tr-spot"),ar=box.querySelector(".tr-arrow"),bu=box.querySelector(".tr-bub"),pad=6,vh=window.innerHeight;
     sp.style.cssText="left:"+(r.left-pad)+"px;top:"+(r.top-pad)+"px;width:"+(r.width+pad*2)+"px;height:"+(r.height+pad*2)+"px";
     var below=r.top+r.height/2<vh/2,bh=bu.offsetHeight,cx=Math.min(Math.max(r.left+r.width/2,28),window.innerWidth-28);
     if(below){var bt=Math.min(r.bottom+pad+44,vh-bh-12);bu.style.top=bt+"px";ar.className="tr-arrow up";ar.style.top=(r.bottom+pad+4)+"px"}
