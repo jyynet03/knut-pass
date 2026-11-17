@@ -3397,7 +3397,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   function tourNext(){if(!TOUR)return;TOUR.i++;if(TOUR.i>=TSTEPS.length)return tourEnd(true);tourShow()}
   function tourEnd(fin){if(fin)bcSet("tour",1);if(TOUR){clearInterval(TOUR.timer);if(TOUR.never)store("ut-tour-never",1)}TOUR=null;store("ut-tour",1);var b=document.getElementById("tour");if(b)b.hidden=true;go("home");window.scrollTo(0,0);if(fin)toast("준비 끝! 궁금한 건 위 검색창에 물어보세요.")}
   window.addEventListener("resize",function(){if(TOUR)tourTick()});
-  if(!store("ut-tour")&&!store("ut-tour-never")&&!location.hash.replace("#",""))setTimeout(tourStart,700);
+  if(!store("ut-tour-never")&&!location.hash.replace("#",""))setTimeout(tourStart,700); /* 다시는 보지 않기를 체크하기 전까지는 열 때마다 */
 
   /* 운영팀(이 앱을 고칠 수 있는 사람)에게만 꿀팁 추가·삭제를 보여 준다 */
   if(window.claude&&window.claude.use){
