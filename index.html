@@ -1338,10 +1338,35 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
   /* 이 폰에 저장. 브라우저 저장공간이 막혀 있으면(미리보기·일부 앱 안 브라우저) 앱을 켜 둔 동안만 메모리에 둔다 */
   var MEMST={},LSOK=(function(){try{localStorage.setItem("ut-t","1");localStorage.removeItem("ut-t");return true}catch(e){return false}})();
+  /* 학번 로그인하면 이 기록들은 계정에 저장되어 폰·PC가 같아진다 */
+  var SYNCK=["ut-todo","ut-tt","ut-dd","ut-goals","ut-fav","ut-check"],SYNC={applying:false,t:null,unsub:null,uid:null,sent:{}};
   function store(k,v){
     if(v===undefined){if(LSOK){try{var r=localStorage.getItem(k);if(r!=null)return JSON.parse(r)}catch(e){}}return k in MEMST?JSON.parse(MEMST[k]):null}
     var s=JSON.stringify(v);MEMST[k]=s;if(LSOK){try{localStorage.setItem(k,s)}catch(e){LSOK=false}}
+    if(SYNCK.indexOf(k)>-1&&!SYNC.applying){var m=store("ut-syncts")||{};m[k]=Date.now();store("ut-syncts",m);syncPush()}
   }
+  function syncKey(k){return k.replace(/-/g,"_")}
+  function syncPush(){clearTimeout(SYNC.t);SYNC.t=setTimeout(syncUpload,700)}
+  function syncUpload(){if(typeof FB==="undefined"||!BOARD_LIVE||!FB.ready||!FB.email||SYNC.uid!==FB.uid)return;
+    var m=store("ut-syncts")||{},o={at:window.firebase.firestore.FieldValue.serverTimestamp()},any=false;
+    SYNCK.forEach(function(k){if(m[k]&&m[k]>(SYNC.sent[k]||0)){o["v_"+syncKey(k)]=JSON.stringify(store(k));o["t_"+syncKey(k)]=m[k];any=true}});
+    if(!any)return;var sentNow={};SYNCK.forEach(function(k){if(m[k])sentNow[k]=m[k]});
+    FB.db.collection("mydata").doc(FB.uid).set(o,{merge:true}).then(function(){Object.keys(sentNow).forEach(function(k){SYNC.sent[k]=Math.max(SYNC.sent[k]||0,sentNow[k])})},function(){})}
+  /* 로그인 전 이 기기 기록과 계정 기록 합치기: 같은 id면 계정 쪽, 나머지는 모두 살림 */
+  function syncMerge(a,b){if(!Array.isArray(a)||!a.length)return b;if(!Array.isArray(b))return a;
+    if(a.concat(b).every(function(x){return x&&typeof x==="object"&&x.id})){var by={},out=[];b.forEach(function(x){by[x.id]=1;out.push(x)});a.forEach(function(x){if(!by[x.id])out.push(x)});return out}
+    var seen={},o2=[];b.concat(a).forEach(function(x){var s=JSON.stringify(x);if(!seen[s]){seen[s]=1;o2.push(x)}});return o2}
+  function syncStart(){if(typeof FB==="undefined"||!BOARD_LIVE||!FB.ready||!FB.email)return;if(SYNC.uid===FB.uid)return;if(SYNC.unsub)SYNC.unsub();
+    SYNC.uid=FB.uid;SYNC.sent={};
+    SYNC.unsub=FB.db.collection("mydata").doc(FB.uid).onSnapshot(function(d){var r=d.exists?d.data():{},m=store("ut-syncts")||{},changed=false,push=false;
+      SYNCK.forEach(function(k){var sk=syncKey(k),rt=r["t_"+sk]||0,lt=m[k]||0;if(rt)SYNC.sent[k]=Math.max(SYNC.sent[k]||0,rt);
+        if(rt>lt){var v=null;try{v=JSON.parse(r["v_"+sk])}catch(e){}var local=store(k),nv=lt?v:syncMerge(local,v);
+          SYNC.applying=true;store(k,nv);SYNC.applying=false;m[k]=rt;changed=true;
+          if(!lt&&JSON.stringify(nv)!==JSON.stringify(v)){m[k]=Date.now();push=true}}
+        else if(lt>rt)push=true;
+        else if(!lt&&!rt){var cur=store(k);if(cur!=null&&(!Array.isArray(cur)||cur.length)){m[k]=Date.now();push=true}}});
+      store("ut-syncts",m);if(push)syncPush();if(changed&&page.hidden&&sheet.hidden)render()},function(){})}
+  function syncStop(){if(SYNC.unsub){SYNC.unsub();SYNC.unsub=null}SYNC.uid=null;SYNC.sent={}}
   function ss(k,v){try{if(v===undefined)return JSON.parse(sessionStorage.getItem(k)||"null");if(v===null)sessionStorage.removeItem(k);else sessionStorage.setItem(k,JSON.stringify(v))}catch(e){return null}}
   function toMin(t){var p=t.split(":");return +p[0]*60+ +p[1]}
   function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
@@ -2223,7 +2248,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     if(BOARD_LIVE)h+=h2("학번 로그인")+'<button class="linkbar" data-login="open">'+ico("user")+'<span class="main"><span class="name" style="display:block">'+(FB.email?esc(FB.email.split("@")[0])+' 로그인됨':'학번으로 로그인')+'</span><span class="sub" style="display:block">'+(FB.email?'누르면 로그아웃할 수 있어요':'글쓰기·꿀팁장소 추가는 로그인해야 할 수 있어요')+'</span></span>'+ico("down","chev")+'</button>';
     h+='<button class="linkbar" data-tour="1" style="margin-top:14px">'+ico("tip")+'<span class="main"><span class="name" style="display:block">사용방법 다시 보기</span><span class="sub" style="display:block">시간표·할 일 넣기부터 화면 안내까지</span></span>'+ico("down","chev")+'</button>';
     h+=h2("화면 테마")+'<div class="seg">'+[["auto","자동"],["light","밝게"],["dark","어둡게"]].map(function(t){return '<button class="chip" data-theme="'+t[0]+'" aria-pressed="'+(TH===t[0])+'">'+t[1]+'</button>'}).join("")+'</div><p class="hint" style="margin-top:6px">자동: 아침 8시부터 밝게, 저녁 6시부터 어둡게 바뀌어요. 고른 테마는 이 폰 브라우저에 저장돼요.</p>';
-    h+=h2("내 데이터")+'<p class="hint">할 일, 시간표, D-day, 목표·경력, 즐겨찾기, 체크리스트는 이 폰의 브라우저에만 저장돼요. 다른 폰에서는 보이지 않고, 브라우저 데이터를 지우면 사라져요.</p>';
+    h+=h2("내 데이터")+'<p class="hint">'+(FB.email?'할 일, 시간표, D-day, 목표, 즐겨찾기는 내 계정에 저장돼서 폰과 PC에서 똑같이 보여요. 나만 볼 수 있어요.':'할 일, 시간표, D-day, 목표, 즐겨찾기는 지금 이 기기에만 저장돼요. 학번으로 로그인하면 폰과 PC에서 똑같이 볼 수 있어요.')+'</p>';
     h+='<button class="linkbar" data-rules="1" style="margin-top:14px">'+ico("tip")+'<span class="main"><span class="name" style="display:block">이용 규칙 · 개인정보 처리방침</span><span class="sub" style="display:block">통통 가이드 운영팀</span></span>'+ico("down","chev")+'</button>';
     
     if(FB.ready&&S.opid)h+=h2("운영팀용 ID")+'<div class="group"><div class="irow"><span style="font-size:13px">'+esc(FB.uid)+'</span><button class="copy copy-btn" data-v="'+esc(FB.uid)+'">복사</button></div></div><p class="hint" style="margin-top:6px">운영팀원으로 정해지면 이 ID를 등록해요. 일반 이용자는 신경 쓰지 않아도 돼요.</p>';
@@ -2291,7 +2316,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
       r[0].forEach(function(d){ps.push(del(db.collection("postimg").doc(d.id)));ps.push(del(d.ref))});
       [1,3,5,6,7].forEach(function(i){r[i].forEach(function(d){ps.push(del(d.ref))})});r[2].forEach(function(d){ps.push(d.ref.update({photo:""}).catch(function(){}))});
       r[4].forEach(function(d){ps.push(del(d.ref));ps.push(del(db.collection("friends").doc(d.id).collection("f").doc(me)))});
-      ps.push(del(db.collection("profiles").doc(me)));if(nick)ps.push(del(db.collection("nicks").doc(nickKey(nick))));ps.push(del(db.collection("ubadges").doc(me)));ps.push(del(db.collection("users").doc(me)));
+      ps.push(del(db.collection("profiles").doc(me)));ps.push(del(db.collection("mydata").doc(me)));syncStop();if(nick)ps.push(del(db.collection("nicks").doc(nickKey(nick))));ps.push(del(db.collection("ubadges").doc(me)));ps.push(del(db.collection("users").doc(me)));
       return Promise.all(ps)
     }).then(function(){return u.delete()}).then(function(){
       SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=null;SOC.req=[];SOC.fr=[];SOC.dm=[];SOC.sent=[];if(PSYNC.unsub){PSYNC.unsub();PSYNC.unsub=null;PSYNC.uid=null}
@@ -2327,7 +2352,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
       if(join)return;return FB.db.collection("profiles").doc(FB.uid).get().then(function(d){store("ut-profile",d.exists?{name:d.data().nick,photo:""}:{})},function(){})
     }).then(function(){closeSheet();toast(join?"가입했어요. 다음부터 이 학번으로 로그인하세요.":"로그인했어요.");render();if(SOC.pend){var pf=SOC.pend;SOC.pend=null;setTimeout(function(){friendByNick(pf)},600)}else if(!join&&!TOUR&&!store("ut-tour-never"))setTimeout(tourStart,900)},function(e){toast(authErr(e))});
   }
-  function doLogout(){MYB={ids:[],selA:"",selT:""};store("ut-myb",MYB);SOC.dmIds=null;try{navigator.clearAppBadge&&navigator.clearAppBadge().catch(function(){})}catch(e){}if(PSYNC.unsub){PSYNC.unsub();PSYNC.unsub=null;PSYNC.uid=null}SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=null;SOC.req=[];SOC.fr=[];SOC.dm=[];var A=window.firebase.auth();A.signOut().then(function(){return A.signInAnonymously()}).then(function(c){FB.uid=c.user.uid;FB.email=null;FB.admin=false;store("ut-profile",{});closeSheet();toast("로그아웃했어요.");render()},function(e){toast(authErr(e))})}
+  function doLogout(){syncStop();MYB={ids:[],selA:"",selT:""};store("ut-myb",MYB);SOC.dmIds=null;try{navigator.clearAppBadge&&navigator.clearAppBadge().catch(function(){})}catch(e){}if(PSYNC.unsub){PSYNC.unsub();PSYNC.unsub=null;PSYNC.uid=null}SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=null;SOC.req=[];SOC.fr=[];SOC.dm=[];var A=window.firebase.auth();A.signOut().then(function(){return A.signInAnonymously()}).then(function(c){FB.uid=c.user.uid;FB.email=null;FB.admin=false;store("ut-profile",{});closeSheet();toast("로그아웃했어요.");render()},function(e){toast(authErr(e))})}
   /* 정보 고치기(위키): edits/{장소} 에 지금 내용, edits/{장소}/h 에 기록. 처음 정보는 앱에 들어 있는 운영팀 정리본 */
   /* ===== 친구·쪽지 (학번 로그인 + 닉네임 필요) =====
      friendreq/{받는 사람}/r/{보낸 사람}, friends/{나}/f/{친구}, dm/{받는 사람}/m/{쪽지} */
@@ -2376,7 +2401,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     if(PSYNC.uid===FB.uid)return;if(PSYNC.unsub)PSYNC.unsub();PSYNC.uid=FB.uid;
     PSYNC.unsub=FB.db.collection("profiles").doc(FB.uid).onSnapshot(function(d){if(!d.exists)return;var n=d.data().nick||"",cur=profile().name||"";
       if(n&&n!==cur){store("ut-profile",{name:n,photo:""});if(page.hidden&&sheet.hidden)render()}},function(){})}
-  function loadSocial(){syncProfile();if(!BOARD_LIVE||!FB.ready||!FB.email)return;if(SOC.uid===FB.uid)return;
+  function loadSocial(){syncProfile();syncStart();if(!BOARD_LIVE||!FB.ready||!FB.email)return;if(SOC.uid===FB.uid)return;
     SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=FB.uid;SOC.dmIds=null;SOC.req=[];SOC.fr=[];SOC.dm=[];SOC.sent=[];var me=FB.uid,db=FB.db;
     var up=function(){dmNotify();var cb=document.getElementById("chatbox");if(cb&&CHAT){cb.innerHTML=chatHtml();dmMarkSeen(CHAT.u);chatScroll()}var b=document.getElementById("socbox");if(b)b.innerHTML=socialHtml();if(b&&S.tab==="my"&&S.my==="friend")dmSeen();badgeUpdate();if(S.tab==="my"&&S.my!=="friend"&&page.hidden&&sheet.hidden)render()};
     var on=function(q,key){SOC.subs.push(q.onSnapshot(function(s){SOC[key]=s.docs.map(function(d){var x=d.data();x.id=d.id;return x});up()},function(){}))};
@@ -2703,7 +2728,8 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
       li('<b>나와 상대방만 보는 정보</b>: 친구 목록과 받은 친구 신청은 나만 볼 수 있어요. 쪽지는 받은 사람의 쪽지함과 내 보낸 쪽지함에 저장되고, 대화한 두 사람만 볼 수 있어요.')+
       li('<b>서버에 함께 저장되는 기록</b>: 글·댓글·쪽지를 쓴 시각(도배 방지용), 장소 사진을 올린 날과 장소(하루 한 곳 확인용), 따봉·신고 기록(한 사람이 한 번만 누르도록), 얻은 업적 목록과 방문한 날 수.')+
       li('<b>세기만 하는 정보</b>: 오늘 방문수, 오늘 많이 찾는 키워드, 오늘의 HOT 이슈는 날짜별 숫자만 세요. 누가 방문하거나 검색했는지는 저장하지 않아요.')+
-      li('<b>이 기기에만 저장되는 정보</b>: 할 일, 달력, 시간표, D-day, 목표, 즐겨찾기, 화면 설정, 사용방법을 본 기록, 안 읽은 쪽지 표시, 업적 계산용 기록(접속 시간대, 돌림판 횟수 등)은 서버로 보내지 않아요. 브라우저 기록을 지우면 함께 지워져요.')+
+      li('<b>내 계정에만 저장되는 정보</b>: 학번으로 로그인하면 할 일, 시간표, D-day, 목표, 즐겨찾기를 내 계정에 저장해 폰과 PC에서 똑같이 보여 줘요. 나만 볼 수 있고, 계정을 삭제하면 함께 지워져요.')+
+      li('<b>이 기기에만 저장되는 정보</b>: 로그인하지 않았을 때의 할 일·시간표·D-day·목표·즐겨찾기, 화면 설정, 사용방법을 본 기록, 안 읽은 쪽지 표시, 업적 계산용 기록(접속 시간대, 돌림판 횟수 등)은 서버로 보내지 않아요. 브라우저 기록을 지우면 함께 지워져요.')+
       li('<b>알림</b>: 새 쪽지 알림은 직접 허용한 경우에만, 앱이 열려 있을 때 기기 안에서 띄워요. 알림을 위해 기기 정보를 서버로 보내지 않아요.')+
       li('<b>쓰는 목적</b>: 로그인과 기기 간 동기화, 게시판·장소·친구·쪽지 기능 제공, 도배·악용 막기(작성 간격 제한, 신고 처리), 인기 꿀팁·키워드·업적 보여 주기.')+
       li('<b>보관 기간</b>: 글, 댓글, 장소, 사진, 업적, 쪽지는 올린 사람이 지우거나 운영팀이 지울 때까지 보관해요. 쪽지를 지우면 내 쪽지함에서만 지워지고 상대방 쪽지함에는 남아요.')+

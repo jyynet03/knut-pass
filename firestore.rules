@@ -424,6 +424,14 @@ service cloud.firestore {
         && okText(request.resource.data.reason, 300) && request.resource.data.at == request.time;
     }
 
+    // 내 기록 동기화: mydata/{uid}. 학번 로그인한 본인만 읽고 씀
+    match /mydata/{uid} {
+      allow read, delete: if signedIn() && me() == uid;
+      allow create, update: if member() && me() == uid
+        && request.resource.data.keys().hasOnly(['at', 'v_ut_todo', 't_ut_todo', 'v_ut_tt', 't_ut_tt', 'v_ut_dd', 't_ut_dd', 'v_ut_goals', 't_ut_goals', 'v_ut_fav', 't_ut_fav', 'v_ut_check', 't_ut_check'])
+        && request.resource.data.at == request.time;
+    }
+
     match /admins/{uid} {
       allow read: if signedIn() && me() == uid;
     }
