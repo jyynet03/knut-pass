@@ -2697,15 +2697,28 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
       FB.db.runTransaction(function(tx){return tx.get(ref).then(function(s){if(s.exists)tx.update(ref,{n:(s.data().n||0)+1});else tx.set(ref,{n:1})})}).then(function(){KW.at=0;loadKw()}).catch(function(){})});
   }
   /* ===== 자동 보호: 운영자가 없어도 올리기 전에 거르고, 올라간 글도 가린다 ===== */
-  var BADW=["씨발","시발","씨바","씨팔","ㅅㅂ","ㅆㅂ","병신","븅신","ㅂㅅ","좆","존나","졸라","지랄","ㅈㄹ","개새","개색","새끼","미친놈","미친년","닥쳐","꺼져","엿먹","느금","니애미","니미럴","애미","애비","창녀","걸레","한남충","김치녀","급식충","틀딱","fuck","shit","bitch"];
+  /* 욕설: 띄어쓰기·점·숫자를 끼워 넣어도 걸리게 글자만 남겨서 본다 */
+  var BADW=["씨발","시발","씨바","씨팔","시팔","씨빨","쓰발","씨벌","시벌","쓰벌","ㅅㅂ","ㅆㅂ","ㅅ발","병신","븅신","빙신","병쉰","ㅂㅅ","좆","ㅈ같","존나","졸라","지랄","ㅈㄹ","개새끼","개새","개색","개세","개쉐","새끼","쌔끼","새꺄","미친놈","미친년","미친새","닥쳐","꺼져","엿먹","느금","니애미","니미럴","애미","애비","엠창","창녀","걸레","한남충","김치녀","급식충","틀딱","fuck","shit","bitch","sibal","ssibal","shibal","tlqkf","qudtls"];
+  /* 욕설처럼 보이지만 평범한 말 (먼저 지우고 본다) */
+  var BADOK=/새끼\s*(손가락|발가락|줄|고양이|강아지|돼지|오리|새|곰|양|손톱)|시발\s*(점|역|택시|버스|열차|자동차)|걸레\s*(질|받이|빨)|애비뉴|시바\s*견|졸라맨|꺼져\s*(있|서|버|가|도|요|야|져)|불\s*꺼져/g;
+  function modNorm(s){return String(s||"").replace(BADOK,"").toLowerCase().replace(/[^가-힣ㄱ-ㅎㅏ-ㅣa-z]/g,"")}
   function modCheck(t){
-    var s=String(t||""),z=s.replace(/새끼(손가락|발가락|줄|고양이|강아지|돼지|오리)/g,"").replace(/[\s.\-_*~!?,·ㆍ'"]/g,"").toLowerCase();
+    var s=String(t||""),z=modNorm(s);
     for(var i=0;i<BADW.length;i++)if(z.indexOf(BADW[i])>-1)return "욕설·비하 표현은 쓸 수 없어요. 바르고 고운 말로 써 주세요.";
-    if(/01[016789][\s.\-]?\d{3,4}[\s.\-]?\d{4}/.test(s)||/[\w.+-]+@[\w-]+\.[\w.]+/.test(s)||/\d{6}[\s-]?[1-4]\d{6}/.test(s)||/(^|\D)20\d{6}(\D|$)/.test(s))return "전화번호·이메일·학번 같은 개인정보는 쓸 수 없어요.";
-    if(/https?:\/\/|www\.|open\.kakao|오픈\s*채팅|오픈톡|텔레그램|토토|카지노|바카라|대출|수익\s*보장|\.(com|net|kr|co|io|me|ly)(\/|\b)/i.test(s))return "링크·오픈채팅·광고는 쓸 수 없어요.";
+    var sp=s.replace(/\s+/g,"");
+    if(/01[016789][\s.\-]?\d{3,4}[\s.\-]?\d{4}/.test(s)          /* 휴대폰 번호 */
+      ||/[공영]일[공영일이삼사오육칠팔구]{8,}/.test(sp)              /* 한글로 쓴 휴대폰 번호 */
+      ||/[\w.+-]+@[\w-]+\.[\w.]+/.test(s)                           /* 이메일 */
+      ||/\d{6}[\s-]?[1-4]\d{6}/.test(s)                               /* 주민등록번호 */
+      ||/(^|[^\d,.])\d{7,10}(?![\d,.]|\s*원)/.test(s))              /* 학번·계좌번호 같은 7~10자리 숫자 */
+      return "전화번호·이메일·학번 같은 개인정보는 쓸 수 없어요.";
+    if(/https?:\/\/|www\.|open\.kakao|오픈\s*채팅|오픈톡|텔레그램|\.(com|net|kr|co|io|me|ly|org|xyz|site|shop|link)(\/|\b)/i.test(s)
+      ||/(카톡|카카오톡|텔레|라인|인스타|디엠|dm)\s*(아이디|id|주소|친추)|친추\s*(해|주|부탁)/i.test(s)
+      ||/토토|카지노|바카라|수익\s*보장|(무직자|당일|비대면|급전|소액|무담보)\s*대출|대출\s*(문의|상담|가능|승인)/.test(s))
+      return "링크·연락처·광고는 쓸 수 없어요.";
     return "";
   }
-  function maskBad(t){var s=String(t||"");BADW.forEach(function(w){var re=new RegExp(w.split("").map(function(c){return c.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}).join("[\\s.\\-_*~!?,]*"),"gi");s=s.replace(re,"***")});return s}
+  function maskBad(t){var s=String(t||""),keep=[];s=s.replace(BADOK,function(x){keep.push(x);return "\u0001"+(keep.length-1)+"\u0001"});BADW.slice().sort(function(a,b){return b.length-a.length}).forEach(function(w){var re=new RegExp(w.split("").map(function(c){return c.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}).join("[\\s.\\-_*~!?,]*"),"gi");s=s.replace(re,"***")});return s.replace(/\u0001(\d+)\u0001/g,function(x,i){return keep[+i]})}
   var HIDE_AT=3; /* 신고 3번이면 자동으로 가림 */
   function rulesPage(){
     var li=function(t){return '<li>'+t+'</li>'};

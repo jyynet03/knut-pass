@@ -13,6 +13,10 @@ service cloud.firestore {
     function isAdmin() { return signedIn() && exists(/databases/$(database)/documents/admins/$(me())); }
     function userDoc() { return /databases/$(database)/documents/users/$(me()); }
     function okText(s, max) { return s is string && s.size() > 0 && s.size() <= max; }
+    // 글 필터(서버): 대표 욕설·링크·휴대폰 번호·이메일이 들어 있으면 거절. 변형 욕설은 앱에서 한 번 더 거름
+    function clean(s) {
+      return !(s is string) || !s.lower().matches('[\\s\\S]*(씨발|씨빨|병신|좆|존나|지랄|개새끼|니애미|fuck|shit|bitch|https?://|www[.]|open[.]kakao|01[016789][ .-]?[0-9]{3,4}[ .-]?[0-9]{4}|[a-z0-9._%+-]+@[a-z0-9-]+[.][a-z.]+)[\\s\\S]*');
+    }
     function okAuthor(d) {
       return d.nick is string && d.nick.size() > 0 && d.nick.size() <= 20
         && d.badges is list && d.badges.size() <= 3
@@ -85,6 +89,7 @@ service cloud.firestore {
         && request.resource.data.cat in ['꿀팁', '질문', '정보']
         && okText(request.resource.data.title, 60)
         && okText(request.resource.data.body, 2000)
+        && clean(request.resource.data.title) && clean(request.resource.data.body)
         && okAuthor(request.resource.data)
         && request.resource.data.likeCount == 0
         && request.resource.data.commentCount == 0
@@ -98,7 +103,7 @@ service cloud.firestore {
         allow read: if true;
         allow create: if signedIn() && cooled('lastCommentAt', 10) && stamped('lastCommentAt')
           && request.resource.data.keys().hasOnly(['body', 'nick', 'badges', 'uid', 'createdAt'])
-          && okText(request.resource.data.body, 500)
+          && okText(request.resource.data.body, 500) && clean(request.resource.data.body)
           && okAuthor(request.resource.data)
           && modeOk(/databases/$(database)/documents/posts/$(pid)/cmode/$(me()), request.resource.data.nick == '익명');
         allow delete: if signedIn() && (resource.data.uid == me() || isAdmin());
@@ -194,6 +199,7 @@ service cloud.firestore {
       allow create, update: if signedIn() && me() == uid
         && request.resource.data.keys().hasOnly(['nick', 'photo', 'updatedAt'])
         && request.resource.data.nick is string && request.resource.data.nick.size() >= 2 && request.resource.data.nick.size() <= 12
+        && clean(request.resource.data.nick)
         && getAfter(/databases/$(database)/documents/nicks/$(request.resource.data.nick.lower())).data.uid == me()
         && request.resource.data.photo is string && request.resource.data.photo.size() <= 120000
         && request.resource.data.updatedAt == request.time;
@@ -207,7 +213,7 @@ service cloud.firestore {
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly(['uid', 'nick', 'title', 'target', 'unit', 'doneAt', 'photo', 'createdAt', 'reportCount'])
         && request.resource.data.uid == me()
-        && okText(request.resource.data.title, 40)
+        && okText(request.resource.data.title, 40) && clean(request.resource.data.title)
         && request.resource.data.nick is string && request.resource.data.nick.size() <= 12
         && (request.resource.data.target == null || request.resource.data.target is int)
         && request.resource.data.unit is string && request.resource.data.unit.size() <= 6
@@ -245,6 +251,7 @@ service cloud.firestore {
         && request.resource.data.m is string && request.resource.data.m.size() <= 30
         && request.resource.data.p is string && request.resource.data.p.size() <= 20
         && okText(request.resource.data.t, 120)
+        && clean(request.resource.data.n) && clean(request.resource.data.t)
         && request.resource.data.createdAt == request.time && request.resource.data.reportCount == 0;
       allow update: if signedIn()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reportCount'])
@@ -264,7 +271,7 @@ service cloud.firestore {
         && cooled('lastCommentAt', 10) && stamped('lastCommentAt')
         && request.resource.data.keys().hasOnly(['body', 'nick', 'uid', 'createdAt', 'badges'])
         && (!('badges' in request.resource.data) || (request.resource.data.badges is list && request.resource.data.badges.size() <= 3))
-        && okText(request.resource.data.body, 500)
+        && okText(request.resource.data.body, 500) && clean(request.resource.data.body)
         && request.resource.data.nick is string && request.resource.data.nick.size() > 0 && request.resource.data.nick.size() <= 20
         && request.resource.data.uid == me() && request.resource.data.createdAt == request.time
         && modeOk(/databases/$(database)/documents/tipcomments/$(tid)/mode/$(me()), request.resource.data.nick == '익명');
@@ -284,6 +291,7 @@ service cloud.firestore {
         && d.menu is string && d.menu.size() <= 40
         && d.price is string && d.price.size() <= 30
         && d.hrs is string && d.hrs.size() <= 160
+        && clean(d.note) && clean(d.menu) && clean(d.price)
         && d.uid == me() && d.nick is string && d.nick.size() >= 2 && d.nick.size() <= 12
         && d.at == request.time;
     }
@@ -334,7 +342,7 @@ service cloud.firestore {
         && cooled('lastCommentAt', 10) && stamped('lastCommentAt')
         && request.resource.data.keys().hasOnly(['from', 'nick', 'body', 'ctx', 'at'])
         && request.resource.data.from == me() && okNick(request.resource.data)
-        && okText(request.resource.data.body, 500)
+        && okText(request.resource.data.body, 500) && clean(request.resource.data.body)
         && request.resource.data.ctx is string && request.resource.data.ctx.size() <= 60
         && request.resource.data.at == request.time;
     }
