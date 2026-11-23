@@ -1358,6 +1358,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     if(a.concat(b).every(function(x){return x&&typeof x==="object"&&x.id})){var by={},out=[];b.forEach(function(x){by[x.id]=1;out.push(x)});a.forEach(function(x){if(!by[x.id])out.push(x)});return out}
     var seen={},o2=[];b.concat(a).forEach(function(x){var s=JSON.stringify(x);if(!seen[s]){seen[s]=1;o2.push(x)}});return o2}
   function syncStart(){if(typeof FB==="undefined"||!BOARD_LIVE||!FB.ready||!FB.email)return;if(SYNC.uid===FB.uid)return;if(SYNC.unsub)SYNC.unsub();
+    var oa=store("ut-acct");if(oa&&oa!==FB.uid)acctWipe();store("ut-acct",FB.uid);
     SYNC.uid=FB.uid;SYNC.sent={};
     SYNC.unsub=FB.db.collection("mydata").doc(FB.uid).onSnapshot(function(d){var r=d.exists?d.data():{},m=store("ut-syncts")||{},changed=false,push=false;
       SYNCK.forEach(function(k){var sk=syncKey(k),rt=r["t_"+sk]||0,lt=m[k]||0;if(rt)SYNC.sent[k]=Math.max(SYNC.sent[k]||0,rt);
@@ -2323,7 +2324,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
       return Promise.all(ps)
     }).then(function(){FB.out=1;return u.delete()}).then(function(){
       SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=null;SOC.req=[];SOC.fr=[];SOC.dm=[];SOC.sent=[];if(PSYNC.unsub){PSYNC.unsub();PSYNC.unsub=null;PSYNC.uid=null}
-      ["ut-profile","ut-myb","ut-bc","ut-bc-"+me,"ut-dmseen2-"+me,"ut-dmseen-"+me].forEach(function(k){try{localStorage.removeItem(k)}catch(e){}});MYB={ids:[],selA:"",selT:""};
+      acctWipe();["ut-profile","ut-myb","ut-bc","ut-bc-"+me,"ut-dmseen2-"+me,"ut-dmseen-"+me].forEach(function(k){try{localStorage.removeItem(k)}catch(e){}});MYB={ids:[],selA:"",selT:""};
       try{navigator.clearAppBadge&&navigator.clearAppBadge().catch(function(){})}catch(e){}
       return A.signInAnonymously().then(function(c){FB.uid=c.user.uid;FB.email=null;FB.admin=false;FB.out=0})
     }).then(function(){closeSheet();toast("계정을 삭제했어요. 그동안 고마웠어요.");render()},function(e){FB.out=0;btn.disabled=false;btn.textContent="계정 삭제";
@@ -2342,7 +2343,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   var SID_RE=/^\d{7,10}$/;
   function authErr(e){var c=e&&e.code||"";return /email-already-in-use|credential-already-in-use/.test(c)?"이미 가입된 학번이에요. 로그인을 눌러 주세요.":/wrong-password|invalid-credential|user-not-found|invalid-login/.test(c)?"학번이나 비밀번호가 맞지 않아요.":/operation-not-allowed/.test(c)?"학번 로그인은 아직 준비 중이에요.":/too-many-requests/.test(c)?"잠시 뒤 다시 시도하세요.":/weak-password/.test(c)?"비밀번호를 6자 이상으로 해 주세요.":"로그인하지 못했어요. 잠시 뒤 다시 시도하세요."}
   function loginSheet(){fbLoad(function(){
-    if(FB.email){openSheet('<div class="sh-name">학번 로그인</div><p class="hint">'+esc(FB.email.split("@")[0])+' 학번으로 로그인되어 있어요.</p><div class="acts" style="margin-top:14px"><button class="btn" data-logout="1">로그아웃</button><button class="btn" data-delacct="1">계정 삭제</button></div>',"학번 로그인");return}
+    if(FB.email){openSheet('<div class="sh-name">학번 로그인</div><p class="hint">'+esc(FB.email.split("@")[0])+' 학번으로 로그인되어 있어요. 로그아웃하면 이 기기의 할 일·시간표 같은 기록은 지워지고, 다시 로그인하면 돌아와요.</p><div class="acts" style="margin-top:14px"><button class="btn" data-logout="1">로그아웃</button><button class="btn" data-delacct="1">계정 삭제</button></div>',"학번 로그인");return}
     openSheet('<div class="sh-name">학번 로그인</div><p class="hint">로그인하면 다른 폰에서도 같은 닉네임과 업적을 쓸 수 있어요. 비밀번호는 찾을 수 없으니 꼭 기억해 주세요. 학교 포털 비밀번호와 다르게 정하세요.</p><form id="loginform"><div class="field"><label for="lg-id">학번</label><input id="lg-id" inputmode="numeric" maxlength="10" autocomplete="username" required></div><div class="field"><label for="lg-pw">비밀번호 (6자 이상)</label><input id="lg-pw" type="password" maxlength="40" autocomplete="current-password" required></div><div class="acts" style="margin-top:14px"><button class="btn" type="button" data-login="join">처음이에요 (가입)</button><button class="btn pri" type="submit">로그인</button></div></form>',"학번 로그인");
   })}
   function doAuth(join){
@@ -2355,7 +2356,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
       if(join)return;return FB.db.collection("profiles").doc(FB.uid).get().then(function(d){store("ut-profile",d.exists?{name:d.data().nick,photo:""}:{})},function(){})
     }).then(function(){closeSheet();toast(join?"가입했어요. 다음부터 이 학번으로 로그인하세요.":"로그인했어요.");render();if(SOC.pend){var pf=SOC.pend;SOC.pend=null;setTimeout(function(){friendByNick(pf)},600)}else if(!join&&!TOUR&&!store("ut-tour-never"))setTimeout(tourStart,900)},function(e){toast(authErr(e))});
   }
-  function doLogout(){FB.out=1;syncStop();MYB={ids:[],selA:"",selT:""};store("ut-myb",MYB);SOC.dmIds=null;try{navigator.clearAppBadge&&navigator.clearAppBadge().catch(function(){})}catch(e){}if(PSYNC.unsub){PSYNC.unsub();PSYNC.unsub=null;PSYNC.uid=null}SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=null;SOC.req=[];SOC.fr=[];SOC.dm=[];var A=window.firebase.auth();A.signOut().then(function(){return A.signInAnonymously()}).then(function(c){FB.uid=c.user.uid;FB.email=null;FB.admin=false;FB.out=0;store("ut-profile",{});closeSheet();toast("로그아웃했어요.");render()},function(e){FB.out=0;toast(authErr(e))})}
+  function doLogout(){FB.out=1;syncStop();MYB={ids:[],selA:"",selT:""};store("ut-myb",MYB);SOC.dmIds=null;try{navigator.clearAppBadge&&navigator.clearAppBadge().catch(function(){})}catch(e){}if(PSYNC.unsub){PSYNC.unsub();PSYNC.unsub=null;PSYNC.uid=null}SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=null;SOC.req=[];SOC.fr=[];SOC.dm=[];var A=window.firebase.auth();A.signOut().then(function(){return A.signInAnonymously()}).then(function(c){FB.uid=c.user.uid;FB.email=null;FB.admin=false;FB.out=0;acctWipe();closeSheet();toast("로그아웃했어요.");render()},function(e){FB.out=0;toast(authErr(e))})}
   /* 정보 고치기(위키): edits/{장소} 에 지금 내용, edits/{장소}/h 에 기록. 처음 정보는 앱에 들어 있는 운영팀 정리본 */
   /* ===== 친구·쪽지 (학번 로그인 + 닉네임 필요) =====
      friendreq/{받는 사람}/r/{보낸 사람}, friends/{나}/f/{친구}, dm/{받는 사람}/m/{쪽지} */
@@ -2399,7 +2400,10 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   function isFriend(u){return SOC.fr.some(function(x){return x.id===u})}
   function needMember(what){if(!BOARD_LIVE){toast(what+"은 공개 사이트에서 쓸 수 있어요.");return false}if(!FB.email){toast(what+"은 학번으로 로그인해야 쓸 수 있어요.");loginSheet();return false}if(!profile().name){toast("닉네임을 먼저 정해 주세요.");profSheet();return false}return true}
   /* 이 기기에 남은 닉네임이 지금 내 계정 것이 아니면(다른 기기에서 탈퇴·로그아웃 등) 지운다 */
-  function clearMine(){store("ut-profile",{});MYB={ids:[],selA:"",selT:""};store("ut-myb",MYB);if(page.hidden&&sheet.hidden)render()}
+  /* 이 기기에 있는 계정 기록 사본을 모두 지운다 (계정 쪽 기록은 그대로라 다시 로그인하면 돌아옴) */
+  function acctWipe(){var a=store("ut-acct"),ks=SYNCK.concat(["ut-syncts","ut-profile","ut-myb","ut-acct"]);if(a)ks=ks.concat(["ut-bc-"+a,"ut-dmseen2-"+a,"ut-dmseen-"+a]);
+    ks.forEach(function(k){delete MEMST[k];try{localStorage.removeItem(k)}catch(e){}});MYB={ids:[],selA:"",selT:""}}
+  function clearMine(){syncStop();acctWipe();if(page.hidden&&sheet.hidden)render()}
   function profCheck(){var n=profile().name;if(!BOARD_LIVE||!FB.ready||!n)return;
     FB.db.collection("nicks").doc(nickKey(n)).get().then(function(d){if(d.exists&&d.data().uid===FB.uid)return;clearMine()},function(){})}
   var PSYNC={uid:null,unsub:null};
@@ -2632,7 +2636,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
         try{
           window.firebase.initializeApp(FB_CONFIG);FB.db=window.firebase.firestore();
           var AU=window.firebase.auth(),un=AU.onAuthStateChanged(function(u){un();(u?Promise.resolve({user:u}):AU.signInAnonymously()).then(function(c){
-            FB.uid=c.user.uid;FB.email=c.user.email||null;FB.ready=true;setTimeout(loadSocial,0);setTimeout(profCheck,1500);setTimeout(function(){badgeCheck()},2500);
+            FB.uid=c.user.uid;FB.email=c.user.email||null;FB.ready=true;if(!FB.email&&store("ut-acct"))clearMine();setTimeout(loadSocial,0);setTimeout(profCheck,1500);setTimeout(function(){badgeCheck()},2500);
             FB.db.collection("admins").doc(FB.uid).get().then(function(d){FB.admin=d.exists}).catch(function(){});
             var q=FB.q;FB.q=[];q.forEach(function(f){f()});
           }).catch(function(e){FB.err=e;FB.loading=false;render()})});
