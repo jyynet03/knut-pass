@@ -101,7 +101,7 @@ service cloud.firestore {
 
       match /comments/{cid} {
         allow read: if true;
-        allow create: if signedIn() && cooled('lastCommentAt', 10) && stamped('lastCommentAt')
+        allow create: if member() && cooled('lastCommentAt', 10) && stamped('lastCommentAt')
           && request.resource.data.keys().hasOnly(['body', 'nick', 'badges', 'uid', 'createdAt'])
           && okText(request.resource.data.body, 500) && clean(request.resource.data.body)
           && okAuthor(request.resource.data)
@@ -110,7 +110,7 @@ service cloud.firestore {
       }
       match /likes/{uid} {
         allow read: if signedIn() && me() == uid;
-        allow create: if signedIn() && me() == uid && request.resource.data.keys().size() == 0;
+        allow create: if member() && me() == uid && request.resource.data.keys().size() == 0;
         allow delete: if signedIn() && me() == uid;
       }
       // 이 글에서 내 댓글 방식(익명 여부). 한 번 정하면 바꿀 수 없음
@@ -165,7 +165,7 @@ service cloud.firestore {
         function st() { return /databases/$(database)/documents/stats/$(k); }
         allow read: if signedIn() && me() == uid;
         // 따봉 표시는 stats 숫자가 같이 1 오를 때만, 취소는 같이 1 내릴 때만
-        allow create: if signedIn() && me() == uid && request.resource.data.keys().size() == 0
+        allow create: if member() && me() == uid && request.resource.data.keys().size() == 0
           && ((!exists(st()) && getAfter(st()).data.likes == 1)
               || (exists(st()) && getAfter(st()).data.likes == get(st()).data.likes + 1));
         allow delete: if signedIn() && me() == uid
@@ -267,7 +267,7 @@ service cloud.firestore {
     // 꿀팁 댓글: tipcomments/{꿀팁id}/c/{댓글}. 게시판 댓글과 같은 10초 간격
     match /tipcomments/{tid}/c/{cid} {
       allow read: if true;
-      allow create: if signedIn() && tid.matches('^[A-Za-z0-9_-]{1,40}$')
+      allow create: if member() && tid.matches('^[A-Za-z0-9_-]{1,40}$')
         && cooled('lastCommentAt', 10) && stamped('lastCommentAt')
         && request.resource.data.keys().hasOnly(['body', 'nick', 'uid', 'createdAt', 'badges'])
         && (!('badges' in request.resource.data) || (request.resource.data.badges is list && request.resource.data.badges.size() <= 3))
