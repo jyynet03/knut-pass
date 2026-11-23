@@ -2321,12 +2321,12 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
       r[4].forEach(function(d){ps.push(del(d.ref));ps.push(del(db.collection("friends").doc(d.id).collection("f").doc(me)))});
       ps.push(del(db.collection("profiles").doc(me)));ps.push(del(db.collection("mydata").doc(me)));syncStop();if(nick)ps.push(del(db.collection("nicks").doc(nickKey(nick))));ps.push(del(db.collection("ubadges").doc(me)));ps.push(del(db.collection("users").doc(me)));
       return Promise.all(ps)
-    }).then(function(){return u.delete()}).then(function(){
+    }).then(function(){FB.out=1;return u.delete()}).then(function(){
       SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=null;SOC.req=[];SOC.fr=[];SOC.dm=[];SOC.sent=[];if(PSYNC.unsub){PSYNC.unsub();PSYNC.unsub=null;PSYNC.uid=null}
       ["ut-profile","ut-myb","ut-bc","ut-bc-"+me,"ut-dmseen2-"+me,"ut-dmseen-"+me].forEach(function(k){try{localStorage.removeItem(k)}catch(e){}});MYB={ids:[],selA:"",selT:""};
       try{navigator.clearAppBadge&&navigator.clearAppBadge().catch(function(){})}catch(e){}
-      return A.signInAnonymously().then(function(c){FB.uid=c.user.uid;FB.email=null;FB.admin=false})
-    }).then(function(){closeSheet();toast("계정을 삭제했어요. 그동안 고마웠어요.");render()},function(e){btn.disabled=false;btn.textContent="계정 삭제";
+      return A.signInAnonymously().then(function(c){FB.uid=c.user.uid;FB.email=null;FB.admin=false;FB.out=0})
+    }).then(function(){closeSheet();toast("계정을 삭제했어요. 그동안 고마웠어요.");render()},function(e){FB.out=0;btn.disabled=false;btn.textContent="계정 삭제";
       toast(e&&/wrong-password|invalid-credential|invalid-login/.test(e.code||"")?"비밀번호가 맞지 않아요.":"삭제하지 못했어요. 잠시 뒤 다시 시도하세요.")})}
   function fmtDate(ts){if(!ts||!ts.toDate)return "방금";var d=ts.toDate(),p=function(n){return String(n).padStart(2,"0")};return d.getFullYear()+"."+p(d.getMonth()+1)+"."+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes())}
   function cmtHtml(c,del){var an=!c.nick||c.nick==="익명";return '<div class="cmt"><div class="pm" style="margin:0">'+(an?'익명':cmAuthor(c))+' <span>'+ago(c.createdAt)+'</span>'+((c.uid===FB.uid||FB.admin)?'<button class="del" '+del+'>삭제</button>':'')+'</div><div style="white-space:pre-wrap;font-size:15px;margin-top:2px;overflow-wrap:anywhere">'+esc(maskBad(c.body))+'</div></div>'}
@@ -2355,7 +2355,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
       if(join)return;return FB.db.collection("profiles").doc(FB.uid).get().then(function(d){store("ut-profile",d.exists?{name:d.data().nick,photo:""}:{})},function(){})
     }).then(function(){closeSheet();toast(join?"가입했어요. 다음부터 이 학번으로 로그인하세요.":"로그인했어요.");render();if(SOC.pend){var pf=SOC.pend;SOC.pend=null;setTimeout(function(){friendByNick(pf)},600)}else if(!join&&!TOUR&&!store("ut-tour-never"))setTimeout(tourStart,900)},function(e){toast(authErr(e))});
   }
-  function doLogout(){syncStop();MYB={ids:[],selA:"",selT:""};store("ut-myb",MYB);SOC.dmIds=null;try{navigator.clearAppBadge&&navigator.clearAppBadge().catch(function(){})}catch(e){}if(PSYNC.unsub){PSYNC.unsub();PSYNC.unsub=null;PSYNC.uid=null}SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=null;SOC.req=[];SOC.fr=[];SOC.dm=[];var A=window.firebase.auth();A.signOut().then(function(){return A.signInAnonymously()}).then(function(c){FB.uid=c.user.uid;FB.email=null;FB.admin=false;store("ut-profile",{});closeSheet();toast("로그아웃했어요.");render()},function(e){toast(authErr(e))})}
+  function doLogout(){FB.out=1;syncStop();MYB={ids:[],selA:"",selT:""};store("ut-myb",MYB);SOC.dmIds=null;try{navigator.clearAppBadge&&navigator.clearAppBadge().catch(function(){})}catch(e){}if(PSYNC.unsub){PSYNC.unsub();PSYNC.unsub=null;PSYNC.uid=null}SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=null;SOC.req=[];SOC.fr=[];SOC.dm=[];var A=window.firebase.auth();A.signOut().then(function(){return A.signInAnonymously()}).then(function(c){FB.uid=c.user.uid;FB.email=null;FB.admin=false;FB.out=0;store("ut-profile",{});closeSheet();toast("로그아웃했어요.");render()},function(e){FB.out=0;toast(authErr(e))})}
   /* 정보 고치기(위키): edits/{장소} 에 지금 내용, edits/{장소}/h 에 기록. 처음 정보는 앱에 들어 있는 운영팀 정리본 */
   /* ===== 친구·쪽지 (학번 로그인 + 닉네임 필요) =====
      friendreq/{받는 사람}/r/{보낸 사람}, friends/{나}/f/{친구}, dm/{받는 사람}/m/{쪽지} */
@@ -2398,6 +2398,10 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
     return '<button class="linkbar" data-notion="1" style="margin-top:10px">'+ico("chat")+'<span class="main"><span class="name" style="display:block">새 쪽지 알림 켜기</span><span class="sub" style="display:block">앱이 열려 있을 때 새 쪽지를 알려 드려요</span></span></button>'}
   function isFriend(u){return SOC.fr.some(function(x){return x.id===u})}
   function needMember(what){if(!BOARD_LIVE){toast(what+"은 공개 사이트에서 쓸 수 있어요.");return false}if(!FB.email){toast(what+"은 학번으로 로그인해야 쓸 수 있어요.");loginSheet();return false}if(!profile().name){toast("닉네임을 먼저 정해 주세요.");profSheet();return false}return true}
+  /* 이 기기에 남은 닉네임이 지금 내 계정 것이 아니면(다른 기기에서 탈퇴·로그아웃 등) 지운다 */
+  function clearMine(){store("ut-profile",{});MYB={ids:[],selA:"",selT:""};store("ut-myb",MYB);if(page.hidden&&sheet.hidden)render()}
+  function profCheck(){var n=profile().name;if(!BOARD_LIVE||!FB.ready||!n)return;
+    FB.db.collection("nicks").doc(nickKey(n)).get().then(function(d){if(d.exists&&d.data().uid===FB.uid)return;clearMine()},function(){})}
   var PSYNC={uid:null,unsub:null};
   function syncProfile(){if(!BOARD_LIVE||!FB.ready)return;
     if(!FB.email){if(PSYNC.unsub){PSYNC.unsub();PSYNC.unsub=null;PSYNC.uid=null}return}
@@ -2628,10 +2632,12 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
         try{
           window.firebase.initializeApp(FB_CONFIG);FB.db=window.firebase.firestore();
           var AU=window.firebase.auth(),un=AU.onAuthStateChanged(function(u){un();(u?Promise.resolve({user:u}):AU.signInAnonymously()).then(function(c){
-            FB.uid=c.user.uid;FB.email=c.user.email||null;FB.ready=true;setTimeout(loadSocial,0);setTimeout(function(){badgeCheck()},2500);
+            FB.uid=c.user.uid;FB.email=c.user.email||null;FB.ready=true;setTimeout(loadSocial,0);setTimeout(profCheck,1500);setTimeout(function(){badgeCheck()},2500);
             FB.db.collection("admins").doc(FB.uid).get().then(function(d){FB.admin=d.exists}).catch(function(){});
             var q=FB.q;FB.q=[];q.forEach(function(f){f()});
           }).catch(function(e){FB.err=e;FB.loading=false;render()})});
+          AU.onAuthStateChanged(function(u){if(u||!FB.ready||!FB.email||FB.out)return;FB.out=1;FB.email=null;FB.admin=false;syncStop();SOC.subs.forEach(function(f){f()});SOC.subs=[];SOC.uid=null;SOC.req=[];SOC.fr=[];SOC.dm=[];if(PSYNC.unsub){PSYNC.unsub();PSYNC.unsub=null;PSYNC.uid=null}clearMine();
+            AU.signInAnonymously().then(function(c){FB.uid=c.user.uid;FB.out=0;render()},function(){FB.out=0})});
         }catch(e){FB.err=e;FB.loading=false;render()}
         return;
       }
