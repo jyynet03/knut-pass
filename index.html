@@ -2158,10 +2158,6 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
   function calEvents(){
     var ev={};
     (store("ut-dd")||[]).forEach(function(d){(ev[d.date]=ev[d.date]||[]).push({t:"D-day · "+d.name,c:"d-dd"})});
-    CONFIRMED.forEach(function(r){
-      var a=r[0].split("-"),b=r[1].split("-");
-      for(var x=new Date(+a[0],+a[1]-1,+a[2]),e=new Date(+b[0],+b[1]-1,+b[2]);x<=e;x.setDate(x.getDate()+1)){var k=ymd(x.getFullYear(),x.getMonth(),x.getDate());(ev[k]=ev[k]||[]).push({t:"학사 · "+r[2],c:"d-ac"})}
-    });
     return ev;
   }
   function calHtml(home){
@@ -2189,7 +2185,7 @@ nav.bar{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px
       h+='<div class="cal">'+sw+'<div class="calbody"><div class="calh"><button class="calnav" data-calnav="-1" aria-label="이전 달">‹</button><b>'+y+'년 '+(m+1)+'월</b><button class="calnav" data-calnav="1" aria-label="다음 달">›</button></div><div class="calg">'+wd;
       for(var i=0;i<first;i++)h+='<span></span>';
       for(var d=1;d<=days;d++)h+=cell(ymd(y,m,d),d,m,(first+d-1)%7);
-      h+='</div><div class="legend" style="margin-top:8px"><span><i class="d-todo"></i>할 일</span><span><i class="d-done"></i>다 끝냄</span><span><i class="d-dd"></i>D-day</span><span><i class="d-ac"></i>학사 일정</span></div></div></div>';
+      h+='</div><div class="legend" style="margin-top:8px"><span><i class="d-todo"></i>할 일</span><span><i class="d-done"></i>한 일</span><span><i class="d-dd"></i>D-day</span></div></div></div>';
     }
     /* 고른 날의 할 일 (오늘이면 밀린 일도 함께) */
     var sl=(by[sel]||[]).slice();if(sel===td)sl=todos().filter(function(t){return !t.done&&t.date<td}).concat(sl);
